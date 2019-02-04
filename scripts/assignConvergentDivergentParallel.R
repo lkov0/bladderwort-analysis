@@ -19,7 +19,7 @@ gffFile <- gffFile[order(gffFile$V1, gffFile$V4),]
 for(i in 1:(nrow(gffFile)-1)) {
 
     if(gffFile[i,1] == gffFile[i+1,1]) {
-        if(i == 1) {
+        if(!(exists("genePairs"))) {
             genePairs <- data.frame(chr1 = gffFile[i,1], start1=gffFile[i,4], stop1=gffFile[i,5], strand1=gffFile[i,7], geneId1=gffFile[i,9], chr2 = gffFile[i+1,1], start2=gffFile[i+1,4], stop2=gffFile[i+1,5], strand2=gffFile[i+1,7], geneId2=gffFile[i+1,9])
         }
         else {
