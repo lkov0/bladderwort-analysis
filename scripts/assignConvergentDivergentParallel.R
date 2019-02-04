@@ -49,6 +49,9 @@ for(i in 1:nrow(genePairs)) {
     }
 }
 
+#TODO: add distance between gene pairs
+
+
 
 cat(table(genePairs$orientation))
 
