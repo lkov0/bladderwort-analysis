@@ -1,4 +1,8 @@
-#assignConvergentDivergentParallel.R
+#############################
+# Author: Lynsey Kovar
+# assignConvergentDivergentParallel.R
+# takes input GFF file containing only gene annotations and pulls out adjacent genes, assigns them as convergent, divergent, or parrallel to each other, and gets length of intergenic region between them. 
+#############################
 
 library(argparse)
 library(ggplot2)
