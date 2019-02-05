@@ -97,11 +97,19 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 #confirm shared regions in old vs. new genome
 #first need to make a key of which genes in old genome match genes in new genome - using blast. only taking best hit.
 
+#make fasta files of genes for each genome using bedtools - include feature name as name
+# Rscript $scriptDir/gffToBed.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genic.bed
+# Rscript $scriptDir/gffToBed.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/Old_Genome/u.gibba_OLD.genic.bed
+# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.faa -bed $dataDir/New_Genome/u.gibba_NEW.genic.bed -fo $dataDir/New_Genome/u.gibba_NEW.genic.fa
+# bedtools getfasta -name -fi $dataDir/Old_Genome/Utricularia_gibba.4.1.fa -bed $dataDir/Old_Genome/u.gibba_OLD.genic.bed -fo $dataDir/Old_Genome/u.gibba_OLD.genic.fa 
+
+
+
 #make blast database using new genome
 makeblastdb -dbtype nucl -in $dataDir/New_Genome/Utricularia_gibba_v2.faa -out $dataDir/New_Genome/u.gibba_NEW
 
 #query old genome against new genome
-
+blastn -db $dataDir/New_Genome/u.gibba_NEW -query $dataDir/Old_Genome/u.gibba_OLD.genic.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -outfmt 6 
 
 
 #pull out intergenic regions and search for motifs
