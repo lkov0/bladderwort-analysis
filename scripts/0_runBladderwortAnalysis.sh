@@ -2,11 +2,11 @@
 # Author: Lynsey Kovar
 # Date: Jan 16 2019
 # Purpose: Parent shell script for bladderwort analysis.
-# Software needed: gmap, gsnap, samtools, cufflinks
+# Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+) 
 ###########################
 
-parentDir=$HOME/Work/Bladderwort
-scriptDir=$parentDir/0_Scripts
+parentDir=$HOME/Dropbox/Bladderwort
+scriptDir=$HOME/Work/bladderwort-analysis/scripts
 dataDir=$parentDir/0_Data
 fastqDir=$dataDir/Fastq
 alignmentDir=$parentDir/1_Alignment
@@ -82,7 +82,27 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 
 #pull out convergent, divergent, parallel gene pairs
 # Rscript $scriptDir/assignConvergentDivergentParallel.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genePairs.txt
-Rscript $scriptDir/assignConvergentDivergentParallel.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/New_Genome/u.gibba_OLD.genePairs.txt
+# Rscript $scriptDir/assignConvergentDivergentParallel.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt
+
+#append FPKM to *.genePairs.txt
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR094438_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -p $analysisDir/SRR094438_u.gibba_NEW.foldChange.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR768657_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -p $analysisDir/SRR768657_u.gibba_NEW.foldChange.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR094438_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -p $analysisDir/SRR094438_u.gibba_OLD.foldChange.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.png
+
+#find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome
+# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
+# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
+
+#confirm shared regions in old vs. new genome
+#first need to make a key of which genes in old genome match genes in new genome - using blast. only taking best hit.
+
+#make blast database using new genome
+makeblastdb -dbtype nucl -in $dataDir/New_Genome/Utricularia_gibba_v2.faa -out $dataDir/New_Genome/u.gibba_NEW
+
+#query old genome against new genome
+
+
 
 #pull out intergenic regions and search for motifs
 

@@ -53,11 +53,10 @@ for(i in 1:nrow(genePairs)) {
     }
 }
 
-#TODO: add distance between gene pairs
+#add distance between gene pairs
+genePairs$distance <- genePairs$start2 - genePairs$stop1
 
-
-
-cat(table(genePairs$orientation))
+cat(table(genePairs$orientation), "\n")
 
 write.table(genePairs, args$outputFile, row.names=F, col.names=T, quote=F, sep="\t")
         
