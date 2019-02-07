@@ -103,13 +103,17 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.faa -bed $dataDir/New_Genome/u.gibba_NEW.genic.bed -fo $dataDir/New_Genome/u.gibba_NEW.genic.fa
 # bedtools getfasta -name -fi $dataDir/Old_Genome/Utricularia_gibba.4.1.fa -bed $dataDir/Old_Genome/u.gibba_OLD.genic.bed -fo $dataDir/Old_Genome/u.gibba_OLD.genic.fa 
 
-
-
 #make blast database using new genome
-makeblastdb -dbtype nucl -in $dataDir/New_Genome/Utricularia_gibba_v2.faa -out $dataDir/New_Genome/u.gibba_NEW
+# makeblastdb -dbtype nucl -in $dataDir/New_Genome/Utricularia_gibba_v2.faa -out $dataDir/New_Genome/u.gibba_NEW
+# 
+# #query old genome against new genome
+# blastn -db $dataDir/New_Genome/u.gibba_NEW -query $dataDir/Old_Genome/u.gibba_OLD.genic.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -outfmt 6 
 
-#query old genome against new genome
-blastn -db $dataDir/New_Genome/u.gibba_NEW -query $dataDir/Old_Genome/u.gibba_OLD.genic.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -outfmt 6 
+#generate bedfile of genomic regions hit by genes
+# Rscript $scriptDir/blastToBed.R -i $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -o $analysisDir/u.gibba_NEW.blastHits.bed
+
+#find which of the regions in the new genome containing a hit from the old genome correspond to genes
+bedtools intersect -loj -a $analysisDir/u.gibba_NEW.blastHits.bed -b $dataDir/New_Genome/u.gibba_NEW.genic.bed > $analysisDir/u.gibba_NEW.blastHits2genes.txt
 
 
 #pull out intergenic regions and search for motifs
