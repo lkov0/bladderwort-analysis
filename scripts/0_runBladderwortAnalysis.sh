@@ -94,14 +94,14 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
 # Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
 
-#confirm shared regions in old vs. new genome
-#first need to make a key of which genes in old genome match genes in new genome - using blast. only taking best hit.
-
 #make fasta files of genes for each genome using bedtools - include feature name as name
 # Rscript $scriptDir/gffToBed.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genic.bed
 # Rscript $scriptDir/gffToBed.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/Old_Genome/u.gibba_OLD.genic.bed
 # bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.faa -bed $dataDir/New_Genome/u.gibba_NEW.genic.bed -fo $dataDir/New_Genome/u.gibba_NEW.genic.fa
 # bedtools getfasta -name -fi $dataDir/Old_Genome/Utricularia_gibba.4.1.fa -bed $dataDir/Old_Genome/u.gibba_OLD.genic.bed -fo $dataDir/Old_Genome/u.gibba_OLD.genic.fa 
+
+# Make map file for identical genes between genomes #
+#####################################################
 
 #make blast database using new genome
 # makeblastdb -dbtype nucl -in $dataDir/New_Genome/Utricularia_gibba_v2.faa -out $dataDir/New_Genome/u.gibba_NEW
@@ -115,11 +115,19 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 #find which of the regions in the new genome containing a hit from the old genome correspond to genes
 # bedtools intersect -loj -a $analysisDir/u.gibba_NEW.blastHits.bed -b $dataDir/New_Genome/u.gibba_NEW.genic.bed > $analysisDir/u.gibba_NEW.blastHits2genes.txt
 
-#make gene map from oldGenome:newGenome
-Rscript $scriptDir/makeGeneMap.R -i $analysisDir/u.gibba_NEW.blastHits2genes.txt -b $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -o $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt
+#make gene map from oldGenome:newGenome - note: not all genes in old genome were found in new genome and some genes were found 
+# Rscript $scriptDir/makeGeneMap.R -i $analysisDir/u.gibba_NEW.blastHits2genes.txt -b $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -o $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt
 
-#pull out intergenic regions and search for motifs
+# find gene pairs showing high fold change expression in each genome #
+######################################################################
 
+#using output from findSharedExpressedGenePairs.R, find gene pairs in this list shared between genomes
+#
+Rscript $scriptDir/getGenePairsSharedInGenomes.R -d $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -q $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt -m $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt -o matched
+
+
+#pull out intergenic regions and search for motifs#
+###################################################
 
 
 
