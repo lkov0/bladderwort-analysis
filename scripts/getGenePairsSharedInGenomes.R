@@ -42,8 +42,8 @@ dbFile$pair_id2 <- paste(dbFile$tracking_id1.otherGenome, dbFile$tracking_id2.ot
 queryFile$pair_id2 <- paste(queryFile$tracking_id1.otherGenome, queryFile$tracking_id2.otherGenome, sep="")
 
 #find matching differentially expressed gene pairs across genomes
-subset(dbFile, pair_id %in% queryFile$pair_id2)
-subset(queryFile, pair_id %in% dbFile$pair_id2)
+dbFile <- subset(dbFile, pair_id %in% queryFile$pair_id2)
+queryFile <- subset(queryFile, pair_id %in% dbFile$pair_id2)
 
 #write output
 write.table(dbFile, paste(args$dbFile, args$outputPrefix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
