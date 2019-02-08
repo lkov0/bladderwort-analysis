@@ -113,8 +113,10 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # Rscript $scriptDir/blastToBed.R -i $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -o $analysisDir/u.gibba_NEW.blastHits.bed
 
 #find which of the regions in the new genome containing a hit from the old genome correspond to genes
-bedtools intersect -loj -a $analysisDir/u.gibba_NEW.blastHits.bed -b $dataDir/New_Genome/u.gibba_NEW.genic.bed > $analysisDir/u.gibba_NEW.blastHits2genes.txt
+# bedtools intersect -loj -a $analysisDir/u.gibba_NEW.blastHits.bed -b $dataDir/New_Genome/u.gibba_NEW.genic.bed > $analysisDir/u.gibba_NEW.blastHits2genes.txt
 
+#make gene map from oldGenome:newGenome
+Rscript $scriptDir/makeGeneMap.R -i $analysisDir/u.gibba_NEW.blastHits2genes.txt -b $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.txt -o $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt
 
 #pull out intergenic regions and search for motifs
 
