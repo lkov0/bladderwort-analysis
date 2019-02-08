@@ -43,8 +43,6 @@ names(inputBlast)[1] <- "queryGeneName"
 
 
 genomeMap <- merge(inputBedtools[,c(10,13)], inputBlast,  by="dbGeneHit")
-inputBlast.DbGeneHits <- subset(inputBlast, dbGeneName != ".")
-inputBlast.noDbGeneHits <- subset(inputBlast, dbGeneName == ".")
 
 genomeMap <- genomeMap[,c("dbGeneName","queryGeneName")]
 
