@@ -91,8 +91,8 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.png
 
 #find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome
-# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
-# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
+Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
+Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
 
 #make fasta files of genes for each genome using bedtools - include feature name as name
 # Rscript $scriptDir/gffToBed.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genic.bed

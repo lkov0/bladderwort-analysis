@@ -14,12 +14,15 @@ parser$add_argument("-o", "--outputSuffix", help="output file prefix")
 args=parser$parse_args()
 cat("finding gene pairs shared between ", args$dbFile, " and ", args$queryFile, "\n")
 
+#prevent conversion of pairId to scientific notation
+options(scipen=999)
+
 dbFile <- read.table(args$dbFile, header=T, sep="\t")
 queryFile <- read.table(args$queryFile, header=T, sep="\t")
 mapFile <- read.table(args$mapFile, header=T, sep="\t")
 
-dbFile$pair_id <- as.character(dbFile$pair_id)
-queryFile$pair_id <- as.character(queryFile$pair_id)
+dbFile$pair_id <- paste(dbFile$tracking_id1, dbFile$tracking_id2, sep="")
+queryFile$pair_id <- paste(queryFile$tracking_id1, queryFile$tracking_id2, sep="")
 
 #make tracking_id1-otherGenome and tracking_id2-otherGenome columns using merge function in db and query files
 
@@ -46,6 +49,6 @@ dbFile <- subset(dbFile, pair_id %in% queryFile$pair_id2)
 queryFile <- subset(queryFile, pair_id %in% dbFile$pair_id2)
 
 #write output
-write.table(dbFile, paste(args$dbFile, args$outputPrefix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
-write.table(queryFile, paste(args$queryFile, args$outputPrefix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
+write.table(dbFile, paste(args$dbFile, args$outputSuffix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
+write.table(queryFile, paste(args$queryFile, args$outputSuffix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
 
