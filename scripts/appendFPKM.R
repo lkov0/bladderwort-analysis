@@ -23,7 +23,21 @@ names(genePairs.fpkms)[15] <- "FPKM1"
 genePairs.fpkms <- merge(genePairs.fpkms, fpkms[,c(10,15)], by="tracking_id2")
 names(genePairs.fpkms)[16] <- "FPKM2"
 
-genePairs.fpkms$foldChange <- ifelse(genePairs.fpkms$FPKM1 == 0 | genePairs.fpkms$FPKM2 == 0, NA ,abs((genePairs.fpkms$FPKM1 - genePairs.fpkms$FPKM2) / genePairs.fpkms$FPKM2))
+genePairs.fpkms$foldChange <- 0
+
+for(i in 1:nrow(genePairs.fpkms)) {
+    if(genePairs.fpkms[i,"FPKM1"] == 0 | genePairs.fpkms[i,"FPKM2"] == 0) {
+        genePairs.fpkms[i,"foldChange"] = NA
+    }
+    else {
+        if(genePairs.fpkms[i,"FPKM1"] > genePairs.fpkms[i,"FPKM2"]) {
+            genePairs.fpkms[i,"foldChange"] = (genePairs.fpkms[i,"FPKM1"] - genePairs.fpkms[i,"FPKM2"]) / genePairs.fpkms[i,"FPKM2"]
+        }
+        if(genePairs.fpkms[i,"FPKM1"] < genePairs.fpkms[i,"FPKM2"]) {
+            genePairs.fpkms[i, "foldChange"] = (genePairs.fpkms[i,"FPKM2"] - genePairs.fpkms[i,"FPKM1"]) / genePairs.fpkms[i,"FPKM1"]
+        }
+    }
+}
 
 genePairs.fpkms <- subset(genePairs.fpkms, !(is.na(foldChange)))
 
