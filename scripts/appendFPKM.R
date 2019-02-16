@@ -39,7 +39,18 @@ for(i in 1:nrow(genePairs.fpkms)) {
     }
 }
 
-genePairs.fpkms <- subset(genePairs.fpkms, !(is.na(foldChange)))
+genePairs.fpkms$difference <- 0
+
+for(i in 1:nrow(genePairs.fpkms)) {
+        if(genePairs.fpkms[i,"FPKM1"] > genePairs.fpkms[i,"FPKM2"]) {
+            genePairs.fpkms[i,"difference"] = genePairs.fpkms[i,"FPKM1"] - genePairs.fpkms[i,"FPKM2"]
+        }
+        if(genePairs.fpkms[i,"FPKM1"] < genePairs.fpkms[i,"FPKM2"]) {
+            genePairs.fpkms[i, "difference"] = genePairs.fpkms[i,"FPKM2"] - genePairs.fpkms[i,"FPKM1"]
+        }
+}
+
+# genePairs.fpkms <- subset(genePairs.fpkms, !(is.na(foldChange)))
 
 #write table containing only expressed gene pairs
 write.table(genePairs.fpkms, file=args$outputFile, row.names=F, col.names=T, quote=F, sep="\t")

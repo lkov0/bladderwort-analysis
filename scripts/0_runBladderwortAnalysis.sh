@@ -85,14 +85,14 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # Rscript $scriptDir/assignConvergentDivergentParallel.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt
 
 #append FPKM to *.genePairs.txt
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR094438_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -p $analysisDir/SRR094438_u.gibba_NEW.foldChange.png
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR768657_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -p $analysisDir/SRR768657_u.gibba_NEW.foldChange.png
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR094438_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -p $analysisDir/SRR094438_u.gibba_OLD.foldChange.png
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR094438_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.ALL.txt -p $analysisDir/SRR094438_u.gibba_NEW.foldChange.ALL.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR768657_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.ALL.txt -p $analysisDir/SRR768657_u.gibba_NEW.foldChange.ALL.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR094438_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.ALL.txt -p $analysisDir/SRR094438_u.gibba_OLD.foldChange.ALL.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.png
 
 #find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome
-Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
-Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
+# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
+# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
 
 #make fasta files of genes for each genome using bedtools - include feature name as name
 # Rscript $scriptDir/gffToBed.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genic.bed
@@ -122,13 +122,35 @@ Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.g
 ######################################################################
 
 #using output from findSharedExpressedGenePairs.R, find gene pairs in this list shared between genomes
-#
-Rscript $scriptDir/getGenePairsSharedInGenomes.R -d $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -q $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt -m $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt -o matched
+
+# Rscript $scriptDir/getGenePairsSharedInGenomes.R -d $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -q $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt -m $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt -o matched 
 
 
-#pull out intergenic regions and search for motifs#
-###################################################
+###############
+# getting different FPKM values for jason's and my alignment (SRR768657 to u.gibba OLD) going to realign as a test and find correlation with my original results
+###############
+# for transcripts in $fastqDir/SRR768657.fastq.gz; do
+#     for genome in $dataDir/Old_Genome/U.gibba_OLD; do
+#         stem=${transcripts/$fastqDir\/}
+#         stem=${stem/.fastq.gz/}
+#         genomeDir=${genome/U.gibba_*/}
+#         genomeName=${genome/\/home\/lynseykovar\/Dropbox\/Bladderwort\/0_Data\/*_Genome\//}
+#         gsnap -D $genomeDir -d $genomeName --batch=5 --novelsplicing 1 --nthreads $(($threads-2)) --ordered --format sam --output-file $alignmentDir/${stem}_${genomeName}.gsnap.test.sam --gunzip $transcripts;
+#         samtools sort -o $alignmentDir/${stem}_${genomeName}.gsnap.test.bam $alignmentDir/${stem}_${genomeName}.gsnap.test.sam
+#         samtools index $alignmentDir/${stem}_${genomeName}.gsnap.test.bam
+#         rm $alignmentDir/${stem}_${genomeName}.gsnap.test.sam
+#     done
+# done
 
 
+# cufflinks --GTF $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $cuffDir/SRR768657_U.gibba_OLD_test $alignmentDir/SRR768657_U.gibba_OLD.gsnap.test.bam
 
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD_test/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.test.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.test.png
 
+#FPKMs are perfectly correlated.... hmmm. 
+
+#only difference i can see is that jason is using gtf as input for cufflinks instead of gtf. will use exact GTF file jason used (includes, genes, mRNA, exons, etc)
+# gffread $dataDir/Old_Genome/Other_GFF/Utricularia_gibba.4.1.gff3 -T -o $dataDir/Old_Genome/u.gibba_OLD.gtf
+
+# cufflinks --GTF $dataDir/Old_Genome/u.gibba_OLD.gtf -o $cuffDir/SRR768657_U.gibba_OLD_test_gtf $alignmentDir/SRR768657_U.gibba_OLD.gsnap.test.bam
+Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD_test_gtf/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.test.gtf.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.test.gtf.png

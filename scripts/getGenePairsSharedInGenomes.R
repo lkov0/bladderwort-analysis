@@ -52,3 +52,4 @@ queryFile <- subset(queryFile, pair_id %in% dbFile$pair_id2)
 write.table(dbFile, paste(args$dbFile, args$outputSuffix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
 write.table(queryFile, paste(args$queryFile, args$outputSuffix, sep="."), row.names=F, col.names=T, sep="\t", quote=F)
 
+
