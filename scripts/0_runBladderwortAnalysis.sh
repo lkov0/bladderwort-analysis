@@ -153,4 +153,20 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # gffread $dataDir/Old_Genome/Other_GFF/Utricularia_gibba.4.1.gff3 -T -o $dataDir/Old_Genome/u.gibba_OLD.gtf
 
 # cufflinks --GTF $dataDir/Old_Genome/u.gibba_OLD.gtf -o $cuffDir/SRR768657_U.gibba_OLD_test_gtf $alignmentDir/SRR768657_U.gibba_OLD.gsnap.test.bam
-Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD_test_gtf/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.test.gtf.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.test.gtf.png
+# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD_test_gtf/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.test.gtf.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.test.gtf.png
+
+#ok, there is a better correlation between jason's and my results now. See plots directory. There are only ~20 candidate genes he found that I didn't find, and about 40 unique to my dataset. (candidate gene pairs are those with >100fpkm difference in expression AND distance <= 1kb) I think this difference has to do with cufflinks version discrepencies since our alignments essentially looked the same at the loci that were different between our cufflinks output files.
+
+#make bedfile with coverage for all genic positions
+covDir=$analysisDir/Coverage
+
+if [ ! -e $covDir ]; then mkdir $covDir; fi
+
+# samtools sort -o $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.bam 
+# samtools sort -o $alignmentDir/SR7R68657_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.bam
+
+bedtools genomecov -d -ibam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR094438_U.gibba_NEW.genomecov.txt
+bedtools genomecov -d -ibam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR768657_U.gibba_NEW.genomecov.txt
+
+#get average coverage in intergenic regions. 
+
