@@ -5,7 +5,6 @@
 #############################
 
 library(argparse)
-library(ggplot2)
 parser=ArgumentParser()
 parser$add_argument("-i", "--inputFile", help="input GFF file")
 parser$add_argument("-o", "--outputFile", help="output file name")
