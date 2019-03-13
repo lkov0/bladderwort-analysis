@@ -2,7 +2,7 @@
 # Author: Lynsey Kovar
 # Date: Jan 16 2019
 # Purpose: Parent shell script for bladderwort analysis.
-# Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+) 
+# Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+), meme suite (5.0.4), mummer (v4.0.0.beta2)
 ###########################
 
 parentDir=$HOME/Dropbox/Bladderwort
@@ -90,15 +90,17 @@ if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 # Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR094438_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.ALL.txt -p $analysisDir/SRR094438_u.gibba_OLD.foldChange.ALL.png
 # Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.png
 
-#find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome
-# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt
-# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt
+#find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome, minimum 50 fold change
+# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.ALL.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.ALL.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -f 50.0
+# Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.ALL.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt -f 50.0
 
 #make fasta files of genes for each genome using bedtools - include feature name as name
 # Rscript $scriptDir/gffToBed.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genic.bed
 # Rscript $scriptDir/gffToBed.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/Old_Genome/u.gibba_OLD.genic.bed
 # bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.faa -bed $dataDir/New_Genome/u.gibba_NEW.genic.bed -fo $dataDir/New_Genome/u.gibba_NEW.genic.fa
 # bedtools getfasta -name -fi $dataDir/Old_Genome/Utricularia_gibba.4.1.fa -bed $dataDir/Old_Genome/u.gibba_OLD.genic.bed -fo $dataDir/Old_Genome/u.gibba_OLD.genic.fa 
+
+# Rscript $scriptDir/
 
 # Make map file for identical genes between genomes #
 #####################################################
@@ -165,8 +167,31 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 # samtools sort -o $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.bam 
 # samtools sort -o $alignmentDir/SR7R68657_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.bam
 
-bedtools genomecov -d -ibam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR094438_U.gibba_NEW.genomecov.txt
-bedtools genomecov -d -ibam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR768657_U.gibba_NEW.genomecov.txt
+# bedtools genomecov -d -ibam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR094438_U.gibba_NEW.genomecov.txt
+# bedtools genomecov -d -ibam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR768657_U.gibba_NEW.genomecov.txt
 
 #get average coverage in intergenic regions. 
 
+################
+# motif finding
+################
+
+#####meme
+
+#make bedfile of candidate intergenic sequences
+# Rscript $scriptDir/makeIntergenicBed.R -i $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -o $analysisDir/u.gibba_NEW_candidateRegions
+
+#obtain fasta file of intergenic sequences
+# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.divergent.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta
+
+#using meme to find overrepresented sequences in intergenic sequences - just divergent for now since these should contain enrichment of insulator elements.
+meme $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -oc $analysisDir/meme_divergent -dna -p 8 -nmotifs 20
+
+####mummer
+
+
+###############
+# comparing blast output
+###############
+
+# blastn -db $dataDir/New_Genome/u.gibba_NEW -query $dataDir/Old_Genome/u.gibba_OLD.genic.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.forAnalysis.txt -outfmt "6 std qlen"
