@@ -5,8 +5,8 @@
 # Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+), meme suite (5.0.4), mummer (v4.0.0.beta2)
 ###########################
 
-parentDir=$HOME/Dropbox/Bladderwort
-scriptDir=$HOME/Work/bladderwort-analysis/scripts
+parentDir=/scratch/lk82153/Bladderwort
+scriptDir=/scratch/lk82153/Scripts/bladderwort-analysis/scripts
 dataDir=$parentDir/0_Data
 fastqDir=$dataDir/Fastq
 alignmentDir=$parentDir/1_Alignment
@@ -21,7 +21,7 @@ threads=8
 # SRR094438: low coverage, average of 31,500 reads for each condition (~820k total)
 # SRR768657: higher coverage, but conditions were pooled leading to dimming of tissue-specific expression signal. 
 
-PATH="/home/lynseykovar/Programs/sratoolkit.2.9.2-centos_linux64/bin/:$PATH"
+# PATH="/home/lynseykovar/Programs/sratoolkit.2.9.2-centos_linux64/bin/:$PATH"
  
 # download SRA data
 # for file in SRR094438 SRR768657; do 
@@ -184,11 +184,24 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 #obtain fasta file of intergenic sequences
 # bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.divergent.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta
 
+bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.convergent.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta
+
+bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.parallel.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta
+
+
 #using meme to find overrepresented sequences in intergenic sequences - just divergent for now since these should contain enrichment of insulator elements.
-meme $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -oc $analysisDir/meme_divergent -dna -p 8 -nmotifs 20
+# meme $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -oc $analysisDir/meme_divergent -dna -p 8 -nmotifs 20
 
 ####mummer
 
+###finding conserved sequences in intergenic regions. first comparing with grape genome
+makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta -out $dataDir/New_Genome/intergenic.parallel
+makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta -out $dataDir/New_Genome/intergenic.convergent
+makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -out $dataDir/New_Genome/intergenic.divergent
+
+blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/Vvinifera_457_Genoscope.12X.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/vvinifera_intergenic.parallel.blastOut.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/Vvinifera_457_Genoscope.12X.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/vvinifera_intergenic.convergent.blastOut.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/Vvinifera_457_Genoscope.12X.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/vvinifera_intergenic.divergent.blastOut.txt -outfmt "6 std qlen"
 
 ###############
 # comparing blast output
