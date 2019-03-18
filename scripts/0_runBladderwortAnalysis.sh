@@ -6,7 +6,7 @@
 ###########################
 
 parentDir=/scratch/lk82153/Bladderwort
-scriptDir=/scratch/lk82153/Scripts/bladderwort-analysis/scripts
+scriptDir=/scratch/lk82153/Repositories/bladderwort-analysis/scripts
 dataDir=$parentDir/0_Data
 fastqDir=$dataDir/Fastq
 alignmentDir=$parentDir/1_Alignment
