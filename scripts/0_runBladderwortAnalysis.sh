@@ -205,9 +205,9 @@ makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.in
 makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -out $dataDir/New_Genome/intergenic.divergent
 
 for genome in $(ls $dataDir/Genomes | sed "s/.fna//g"); do
-blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 95 -num_alignments 1 -out $blastDir/$genome.parallel.blastOut.txt -outfmt "6 std qlen"
-blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 95 -num_alignments 1 -out $blastDir/$genome.convergent.blastOut.txt -outfmt "6 std qlen"
-blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 95 -num_alignments 1 -out $blastDir/$genome.divergent.blastOut.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.parallel.blastOut.70.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.convergent.blastOut.70.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.divergent.blastOut.70.txt -outfmt "6 std qlen"
 done
 
 
