@@ -184,9 +184,9 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 #obtain fasta file of intergenic sequences
 # bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.divergent.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta
 
-bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.convergent.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta
-
-bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.parallel.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta
+# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.convergent.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta
+# 
+# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $analysisDir/u.gibba_NEW_candidateRegions.intergenic.parallel.bed -fo $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta
 
 
 #using meme to find overrepresented sequences in intergenic sequences - just divergent for now since these should contain enrichment of insulator elements.
