@@ -5,8 +5,8 @@
 # Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+), meme suite (5.0.4), mummer (v4.0.0.beta2)
 ###########################
 
-parentDir=/scratch/lk82153/Bladderwort
-scriptDir=/scratch/lk82153/Repositories/bladderwort-analysis/scripts
+parentDir=/scratch/lk82153/jwlab/Bladderwort
+scriptDir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
 dataDir=$parentDir/0_Data
 fastqDir=$dataDir/Fastq
 alignmentDir=$parentDir/1_Alignment
@@ -195,6 +195,7 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 ####mummer
 
 ###finding conserved sequences in intergenic regions. using grape, mimulus, papaya, tomato, and arabidopsis
+module load BLAST+
 blastDir=$analysisDir/Blast
 if [ ! -e $blastDir ]; then mkdir $blastDir; fi
 
