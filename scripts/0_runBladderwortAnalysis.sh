@@ -194,14 +194,21 @@ bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $an
 
 ####mummer
 
-###finding conserved sequences in intergenic regions. first comparing with grape genome
+###finding conserved sequences in intergenic regions. using grape, mimulus, papaya, tomato, and arabidopsis
+blastDir=$analysisDir/Blast
+if [ ! -e $blastDir ]; then mkdir $blastDir; fi
+
+
 makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta -out $dataDir/New_Genome/intergenic.parallel
 makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta -out $dataDir/New_Genome/intergenic.convergent
 makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -out $dataDir/New_Genome/intergenic.divergent
 
-blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/Vvinifera_457_Genoscope.12X.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/vvinifera_intergenic.parallel.blastOut.txt -outfmt "6 std qlen"
-blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/Vvinifera_457_Genoscope.12X.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/vvinifera_intergenic.convergent.blastOut.txt -outfmt "6 std qlen"
-blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/Vvinifera_457_Genoscope.12X.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/vvinifera_intergenic.divergent.blastOut.txt -outfmt "6 std qlen"
+for genome in $(ls $dataDir/Genomes | sed "s/.fna//g"); do
+blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 95 -num_alignments 1 -out $blastDir/$genome.parallel.blastOut.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 95 -num_alignments 1 -out $blastDir/$genome.convergent.blastOut.txt -outfmt "6 std qlen"
+blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 95 -num_alignments 1 -out $blastDir/$genome.divergent.blastOut.txt -outfmt "6 std qlen"
+done
+
 
 ###############
 # comparing blast output
