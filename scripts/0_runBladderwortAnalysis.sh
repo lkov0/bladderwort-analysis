@@ -5,6 +5,8 @@
 # Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+), meme suite (5.0.4), mummer (v4.0.0.beta2)
 ###########################
 
+# parentDir=~/Xfer/Bladderwort
+# scriptDir=~/Xfer/Repositories/bladderwort-analysis/scripts
 parentDir=/scratch/lk82153/jwlab/Bladderwort
 scriptDir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
 dataDir=$parentDir/0_Data
@@ -190,25 +192,32 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 
 
 #using meme to find overrepresented sequences in intergenic sequences - just divergent for now since these should contain enrichment of insulator elements.
+# module load MEME
+# 
 # meme $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -oc $analysisDir/meme_divergent -dna -p 8 -nmotifs 20
+# 
+# meme $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta -oc $analysisDir/meme_convergent -dna -p 8 -nmotifs 20
+# 
+# meme $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta -oc $analysisDir/meme_parallel -dna -p 8 -nmotifs 20
+
 
 ####mummer
 
 ###finding conserved sequences in intergenic regions. using grape, mimulus, papaya, tomato, and arabidopsis
-module load BLAST+
-blastDir=$analysisDir/Blast
-if [ ! -e $blastDir ]; then mkdir $blastDir; fi
-
-
-makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta -out $dataDir/New_Genome/intergenic.parallel
-makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta -out $dataDir/New_Genome/intergenic.convergent
-makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -out $dataDir/New_Genome/intergenic.divergent
-
-for genome in $(ls $dataDir/Genomes | sed "s/.fna//g"); do
-blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.parallel.blastOut.70.txt -outfmt "6 std qlen"
-blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.convergent.blastOut.70.txt -outfmt "6 std qlen"
-blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.divergent.blastOut.70.txt -outfmt "6 std qlen"
-done
+# module load BLAST+
+# blastDir=$analysisDir/Blast
+# if [ ! -e $blastDir ]; then mkdir $blastDir; fi
+# 
+# 
+# makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.parallel.fasta -out $dataDir/New_Genome/intergenic.parallel
+# makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.convergent.fasta -out $dataDir/New_Genome/intergenic.convergent
+# makeblastdb -dbtype nucl -in $dataDir/New_Genome/u.gibba_NEW_candidateRegions.intergenic.divergent.fasta -out $dataDir/New_Genome/intergenic.divergent
+# 
+# for genome in $(ls $dataDir/Genomes | sed "s/.fna//g"); do
+# blastn -db $dataDir/New_Genome/intergenic.parallel -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.parallel.blastOut.70.txt -outfmt "6 std qlen"
+# blastn -db $dataDir/New_Genome/intergenic.convergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.convergent.blastOut.70.txt -outfmt "6 std qlen"
+# blastn -db $dataDir/New_Genome/intergenic.divergent -query $dataDir/Genomes/$genome.fna -num_threads 8 -perc_identity 70 -num_alignments 1 -out $blastDir/$genome.divergent.blastOut.70.txt -outfmt "6 std qlen"
+# done
 
 
 ###############
@@ -216,3 +225,35 @@ done
 ###############
 
 # blastn -db $dataDir/New_Genome/u.gibba_NEW -query $dataDir/Old_Genome/u.gibba_OLD.genic.fa -num_threads 8 -perc_identity 95 -num_alignments 1 -out $analysisDir/u.gibba_OLD.u.gibba_NEW.blastOut.forAnalysis.txt -outfmt "6 std qlen"
+
+# previously found that there was limited concordance of expression values between genomes... need to check this
+# first generating list of all gene pair matches between genomes for dataset SRR768657 (More reads), also using GTF annotation generated FPKM values for old genome since these matched up with jason's FPKM values. 
+
+# Rscript $scriptDir/getGenePairsSharedInGenomes.R -d $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.ALL.txt -q $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.test.gtf.txt -m $dataDir/geneMap_u.gibba_OLD_u.gibba_NEW.txt -o genomeMatched
+
+################
+# Aligning PacBio Reads to reference for our genotype
+################
+#running this on sapelo so the number 64 pertains to threads
+pbioAlignmentDir=$parentDir/4_PacBioAlignment
+
+if [ ! -e $pbioAlignmentDir ] ; then mkdir $pbioAlignmentDir; fi
+
+#aligning 3.1gb read file first 
+$scriptDir/4_runBlasrAlignmentToRef.sh $dataDir/PacBio/m54193_190408_204645.subreads.bam $dataDir/New_Genome/Utricularia_gibba_v2.faa $pbioAlignmentDir/bladderwort_alignTest.bam 8
+
+# # get genome coverage
+
+# #genotyping?
+
+# #bam2fastq on each of the bam files generated. 
+# module load bam2fastx
+# module load falcon
+
+# #get sequence length distributions for each run
+# for stem in $(ls $dataDir/PacBio/*.bam | awk -F "." '{print $1}'); do
+# pbindex $stem.subreads.bam
+# bam2fastq -o $stem $stem.subreads.bam
+# awk 'NR%4 == 2 {lengths[length($0)]++} END {for (l in lengths) {print l, lengths[l]}}' $stem.fastq.gz > $stem.lengths.txt
+# done
+
