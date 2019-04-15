@@ -28,23 +28,23 @@ queryFile$pair_id <- paste(queryFile$tracking_id1, queryFile$tracking_id2, sep="
 
 #dbFile
 dbFile <- merge(dbFile, mapFile, by.x="tracking_id1", by.y="dbGeneName")
-names(dbFile)[19] <- "tracking_id1.otherGenome"
+colnames(dbFile)[names(dbFile) == "queryGeneName"] <- "tracking_id1.otherGenome"
 
 dbFile <- merge(dbFile, mapFile, by.x="tracking_id2", by.y="dbGeneName")
-names(dbFile)[20] <- "tracking_id2.otherGenome"
+colnames(dbFile)[names(dbFile) == "queryGeneName"] <- "tracking_id2.otherGenome"
 
 #queryFile
 queryFile <- merge(queryFile, mapFile, by.x="tracking_id1", by.y="queryGeneName")
-names(queryFile)[19] <- "tracking_id1.otherGenome"
+names(queryFile)[names(queryFile) == "dbGeneName"] <- "tracking_id1.otherGenome"
 
 queryFile <- merge(queryFile, mapFile, by.x="tracking_id2", by.y="queryGeneName")
-names(queryFile)[20] <- "tracking_id2.otherGenome"
+names(queryFile)[names(queryFile) == "dbGeneName"] <- "tracking_id2.otherGenome"
 
 #make pair_id2 column for each file
 dbFile$pair_id2 <- paste(dbFile$tracking_id1.otherGenome, dbFile$tracking_id2.otherGenome, sep="")
 queryFile$pair_id2 <- paste(queryFile$tracking_id1.otherGenome, queryFile$tracking_id2.otherGenome, sep="")
 
-#find matching differentially expressed gene pairs across genomes
+#find matching gene pairs across genomes
 dbFile <- subset(dbFile, pair_id %in% queryFile$pair_id2)
 queryFile <- subset(queryFile, pair_id %in% dbFile$pair_id2)
 
