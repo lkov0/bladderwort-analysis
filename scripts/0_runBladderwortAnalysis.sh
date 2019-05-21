@@ -5,10 +5,10 @@
 # Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+), meme suite (5.0.4), mummer (v4.0.0.beta2)
 ###########################
 
-# parentDir=~/Xfer/Bladderwort
-# scriptDir=~/Xfer/Repositories/bladderwort-analysis/scripts
-parentDir=/scratch/lk82153/jwlab/Bladderwort
-scriptDir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
+parentDir=~/Xfer/Bladderwort
+scriptDir=~/Xfer/Repositories/bladderwort-analysis/scripts
+# parentDir=/scratch/lk82153/jwlab/Bladderwort
+# scriptDir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
 dataDir=$parentDir/0_Data
 fastqDir=$dataDir/Fastq
 alignmentDir=$parentDir/1_Alignment
@@ -32,41 +32,6 @@ threads=8
 # 
 # $parentDir/1_runAlignment.sh $fastqDir $alignmentDir
 # 
-# # for genome in $dataDir/New_Genome/Utricularia_gibba_v2.faa $dataDir/Old_Genome/Utricularia_gibba.4.1.fa; do
-# gmap_build -d U.gibba_NEW $dataDir/New_Genome/Utricularia_gibba_v2.faa -D $dataDir/New_Genome/
-# gmap_build -d U.gibba_OLD $dataDir/Old_Genome/Utricularia_gibba.4.1.fa -D $dataDir/Old_Genome/
-
-# fix gff file to include genic regions
-# $parentDir/obtainGenicRegions.sh $dataDir $scriptDir $dataDir/New_Genome/u.gibba_NEW.gff
-
-# for transcripts in $fastqDir/SRR094438.fastq.gz $fastqDir/SRR768657.fastq.gz; do
-#     for genome in $dataDir/New_Genome/U.gibba_NEW $dataDir/Old_Genome/U.gibba_OLD; do
-#         stem=${transcripts/$fastqDir\/}
-#         stem=${stem/.fastq.gz/}
-#         genomeDir=${genome/U.gibba_*/}
-#         genomeName=${genome/\/home\/lynseykovar\/Work\/Bladderwort\/0_Data\/*_Genome\//}
-#         gsnap -D $genomeDir -d $genomeName --batch=5 --novelsplicing 1 --nthreads $(($threads-2)) --ordered --format sam --output-file $alignmentDir/${stem}_${genomeName}.gsnap.sam --gunzip $transcripts;
-#         samtools sort -o $alignmentDir/${stem}_${genomeName}.gsnap.bam $alignmentDir/${stem}_${genomeName}.gsnap.sam
-#         samtools index $alignmentDir/${stem}_${genomeName}.gsnap.bam
-#         rm $alignmentDir/${stem}_${genomeName}.gsnap.sam
-#     done
-# done
-
-# use cufflinks to find genic regions showing expression
-# for bam in $(ls $alignmentDir/*.bam | sed "s/.gsnap.bam//g" | sed "s|$alignmentDir/||g"); do
-#     for genome in $(ls $dataDir/New_Genome/*.genic.gff); do
-#         stem=${genome/$dataDir\/*_Genome\/}
-#         stem=${stem/.genic.gff/}
-#         echo cufflinks --GTF $genome -o $cuffDir/$bam $alignmentDir/$bam.gsnap.bam
-#     done
-# done
-
-
-#get expression values in FPKM for each genic locus
-# cufflinks --GTF /home/lynseykovar/Work/Bladderwort/0_Data/New_Genome/u.gibba_NEW.genic.gff -o $cuffDir/SRR094438_U.gibba_NEW $alignmentDir/SRR094438_U.gibba_NEW.gsnap.bam
-# cufflinks --GTF /home/lynseykovar/Work/Bladderwort/0_Data/New_Genome/u.gibba_NEW.genic.gff -o $cuffDir/SRR768657_U.gibba_NEW $alignmentDir/SRR768657_U.gibba_NEW.gsnap.bam
-# cufflinks --GTF /home/lynseykovar/Work/Bladderwort/0_Data/Old_Genome/u.gibba_OLD.genic.gff -o $cuffDir/SRR094438_U.gibba_OLD $alignmentDir/SRR094438_U.gibba_OLD.gsnap.bam
-# cufflinks --GTF /home/lynseykovar/Work/Bladderwort/0_Data/Old_Genome/u.gibba_OLD.genic.gff -o $cuffDir/SRR768657_U.gibba_OLD $alignmentDir/SRR768657_U.gibba_OLD.gsnap.bam
 
 #Pull out gene pairs that show high fold change in expression
 
@@ -169,7 +134,7 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 # samtools sort -o $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.bam 
 # samtools sort -o $alignmentDir/SR7R68657_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.bam
 
-# bedtools genomecov -d -ibam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR094438_U.gibba_NEW.genomecov.txt
+# # bedtools genomecov -d -ibam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR094438_U.gibba_NEW.genomecov.txt
 # bedtools genomecov -d -ibam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.sorted.bam > $analysisDir/Coverage/SRR768657_U.gibba_NEW.genomecov.txt
 
 #get average coverage in intergenic regions. 
@@ -235,25 +200,16 @@ if [ ! -e $covDir ]; then mkdir $covDir; fi
 # Aligning PacBio Reads to reference for our genotype
 ################
 #running this on sapelo so the number 64 pertains to threads
-pbioAlignmentDir=$parentDir/4_PacBioAlignment
+pbioAlignmentDir=$parentDir/5_PacBioAlignment
 
 if [ ! -e $pbioAlignmentDir ] ; then mkdir $pbioAlignmentDir; fi
+# 
+# #aligning 3.1gb read file first 
+# $scriptDir/5_runBlasrAlignmentToRef.sh $dataDir/New_Genome/Utricularia_gibba_v2.faa $pbioAlignmentDir/bladderwort_alignTest.bam $dataDir/PacBio $dataDir $scriptDir $pbioAlignmentDir 48
+# 
+canuDir=$parentDir/6_Canu
 
-#aligning 3.1gb read file first 
-$scriptDir/4_runBlasrAlignmentToRef.sh $dataDir/PacBio/m54193_190408_204645.subreads.bam $dataDir/New_Genome/Utricularia_gibba_v2.faa $pbioAlignmentDir/bladderwort_alignTest.bam 8
+if [ ! -e $canuDir ] ; then mkdir $canuDir; fi
 
-# # get genome coverage
-
-# #genotyping?
-
-# #bam2fastq on each of the bam files generated. 
-# module load bam2fastx
-# module load falcon
-
-# #get sequence length distributions for each run
-# for stem in $(ls $dataDir/PacBio/*.bam | awk -F "." '{print $1}'); do
-# pbindex $stem.subreads.bam
-# bam2fastq -o $stem $stem.subreads.bam
-# awk 'NR%4 == 2 {lengths[length($0)]++} END {for (l in lengths) {print l, lengths[l]}}' $stem.fastq.gz > $stem.lengths.txt
-# done
-
+#assemble with CANU on sapelo
+$scriptDir/6_runCanu.sh $canuDir $dataDir/PacBio $dataDir $dataDir/New_Genome/Utricularia_gibba_v2.faa $scriptDir 8
