@@ -7,12 +7,12 @@ dataDir=$4
 scriptDir=$5
 alignDir=$6
 procs=$7
-
-module load BLASR
-module load SAMtools
-module load BEDTools
-module load BLAST
-module load R
+# 
+# module load BLASR
+# module load SAMtools
+# module load BEDTools
+# module load BLAST
+# module load R
 
 prefix=merged_reads.u.gibba_NEW.alignment
 reads=$pbioDir/merged_reads.bam
@@ -46,14 +46,14 @@ reads=$pbioDir/merged_reads.bam
 # blastn -db $dataDir/New_Genome/u.gibba_NEW -query $prefix.unaligned.fasta -num_threads 8 -perc_identity 95 -num_alignments 5 -out $stem.unaligned.u.gibba_NEW.blastOut.txt -outfmt "6 std qlen"
 # blastn -db $dataDir/New_Genome/u.gibba_OLD -query $prefix.unaligned.fasta -num_threads 8 -perc_identity 95 -num_alignments 5 -out $stem.unaligned.u.gibba_OLD.blastOut.txt -outfmt "6 std qlen"
 
-#blasting raw reads to old and new genome, obtaining DB hits as bed files, then checking overlaps with genes.
-for stem in $(ls $pbioDir/m54193*.bam | sed "s/.subreads.bam//g"); do
+# #blasting raw reads to old and new genome, obtaining DB hits as bed files, then checking overlaps with genes.
+# for stem in $(ls $pbioDir/m54193*.bam | sed "s/.subreads.bam//g"); do
 # blastn -db $dataDir/New_Genome/u.gibba_NEW -query $stem.fasta -num_threads 8 -perc_identity 95 -num_alignments 5 -out $stem.u.gibba_NEW.blastOut.txt -outfmt "6 std qlen"
 # blastn -db $dataDir/Old_Genome/u.gibba_OLD -query $stem.fasta -num_threads 8 -perc_identity 95 -num_alignments 5 -out $stem.u.gibba_OLD.blastOut.txt -outfmt "6 std qlen"
 # Rscript $scriptDir/blastToBed.R -i $stem.u.gibba_NEW.blastOut.txt -o $stem.u.gibba_NEW.blastOut.dbhits.bed
-awk -F"\t" '{print $1, $2, $3}' $stem.u.gibba_NEW.blastOut.dbhits.bed | sed "s/ /\t/g" | sed "s/lcl|//g" > $stem.u.gibba_NEW.blastOut.dbhits.bed
-bedtools intersect -u -a $dataDir/New_Genome/u.gibba_NEW.genes.simple.bed -b $stem.u.gibba_NEW.blastOut.dbhits.bed > $stem.genesWithHits_blast.txt
-done
+# awk -F"\t" '{print $1, $2, $3}' $stem.u.gibba_NEW.blastOut.dbhits.bed | sed "s/ /\t/g" | sed "s/lcl|//g" > $stem.u.gibba_NEW.blastOut.dbhits.bed
+# bedtools intersect -u -a $dataDir/New_Genome/u.gibba_NEW.genes.simple.bed -b $stem.u.gibba_NEW.blastOut.dbhits.bed > $stem.genesWithHits_blast.txt
+# done
 
 # #checking bedgraph file for overlap with genes
 # grep -v 0$ $alignDir/$prefix.genomecov.txt | awk -F"\t" '{print $1, $2, $3}' | sed "s/ /\t/g" | sed "s/lcl|//g" > $alignDir/$prefix.cov.regions.bed

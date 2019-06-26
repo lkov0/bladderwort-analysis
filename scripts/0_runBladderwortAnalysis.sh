@@ -205,11 +205,11 @@ pbioAlignmentDir=$parentDir/5_PacBioAlignment
 if [ ! -e $pbioAlignmentDir ] ; then mkdir $pbioAlignmentDir; fi
 # 
 # #aligning 3.1gb read file first 
-# $scriptDir/5_runBlasrAlignmentToRef.sh $dataDir/New_Genome/Utricularia_gibba_v2.faa $pbioAlignmentDir/bladderwort_alignTest.bam $dataDir/PacBio $dataDir $scriptDir $pbioAlignmentDir 48
+$scriptDir/5_runBlasrAlignmentToRef.sh $dataDir/New_Genome/Utricularia_gibba_v2.faa $pbioAlignmentDir/bladderwort_alignTest.bam $dataDir/PacBio $dataDir $scriptDir $pbioAlignmentDir 48
 # 
 canuDir=$parentDir/6_Canu
 
 if [ ! -e $canuDir ] ; then mkdir $canuDir; fi
 
 #assemble with CANU on sapelo
-$scriptDir/6_runCanu.sh $canuDir $dataDir/PacBio $dataDir $dataDir/New_Genome/Utricularia_gibba_v2.faa $scriptDir 8
+# $scriptDir/6_runCanu.sh $canuDir $dataDir/PacBio $dataDir $dataDir/New_Genome/Utricularia_gibba_v2.faa $scriptDir 8
