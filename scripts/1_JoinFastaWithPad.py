@@ -14,7 +14,7 @@ debug = False
 
 def main():
     args = parse_args()
-    print("Joinging sequences in",args.infile,"and padding with",args.n_padding,"Ns between each")
+    print("Joining sequences in",args.infile,"and padding with",args.n_padding,"Ns between each")
     
     # Open files
     IN = get_filehandle(args.infile, "rt")
