@@ -8,17 +8,21 @@
 # IGVTOOLS="bash /home/jgwall/Software/Browsers/IGVTools/igvtools"
 
 #specify number of processors
-PROCS=48
+# PROCS=48
+
+# module load Biopython/1.68-foss-2016b-Python-3.5.2
 
 # Set up directories
-parentdir=/scratch/lk82153/jwlab/Bladderwort
+parentdir=~/Xfer/Bladderwort
+scriptdir=~/Xfer/Repositories/bladderwort-analysis/scripts
+# parentdir=/scratch/lk82153/jwlab/Bladderwort
+# scriptdir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
 datadir=$parentdir/0_Data
-scriptdir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts/
 # parentdir=$HOME/Work/Bladderwort/7_multiSpeciesAlignment
 # datadir=$HOME/Work/Bladderwort/0_Data
 genomedir=$datadir/Genomes/Asterids
 sourcedir=$datadir/Genomes/Tomato
-aligndir=7_PairwiseAlignment
+aligndir=$parentdir/7_PairwiseAlignment
 combinedir=$aligndir/Multiple_Alignment
 # gerpdir=3_GERP
 # wigdir=3_GERP/3c_WiggleFiles
@@ -45,7 +49,7 @@ if [ ! -e $combinedir ]; then mkdir $combinedir; fi
 # 4081
 # 69266
 # 13750
-TREE="((((Vaccinium_corymbosum,Vaccinium_macrocarpon)Vaccinium,Actinidia_chinensis)Ericales,((Lactuca_sativa,(Helianthus_annuus,Erigeron_canadensis)Asteroideae)Asteraceae,((Cuscuta_australis,((Capsicum_annuum,Solanum_lycopersicum)Solanoideae,(Nicotiana_tabacum,(Petunia_axillaris,Petunia_integrifolia_subsp._inflata)Petunia))Solanaceae)Solanales,(Coffea_canephora,((Utricularia_gibba,Genlisea_aurea)Lentibulariaceae,Erythranthe_guttata)Lamiales))lamiids))asterids);"
+TREE="((((VacciniumCorymbosum VacciniumMacrocarpon) ActinidiaChinensis) ((LactucaSativa (HelianthusAnnuus)) ((CuscutaAustralis((CapsicumAnnuum SolanumLycopersicum) (NicotianaTabacum (PetuniaAxillaris PetuniaInflata))) (CoffeaCanephora ((UtriculariaGibba GenliseaAurea)))))))"
 
 
 ###########
@@ -54,32 +58,32 @@ TREE="((((Vaccinium_corymbosum,Vaccinium_macrocarpon)Vaccinium,Actinidia_chinens
 
 tname=SolanumLycopersicum
 target_genome=$sourcedir/SolanumLycopersicum.GCF_000188115.4_SL3.0_genomic.fna
-target_genome_stem=SolanumLycopersicum.GCF_000188115.4_SL3.0_genomic
-target_size=1000000000 # 1GB = bigger than any utricularia chromosome
+joined_genome=$sourcedir/SolanumLycopersicum.GCF_000188115.4_SL3.0_genomic.all_in_one.fna
+target_size=1500000000 # 1GB = bigger than any tomato chromosome
 query_size=1000000  # 1 MB segments for each query
 
-# # Join the Utricularia genome into a  single scaffold for convenience
-python3 1_JoinFastaWithPad.py -i $target_genome -o $sourcedir/$target_genome_stem.all_in_one.fna -k $sourcedir/$target_genome_stem.all_in_one.key.txt -n 1000 --newname utricularia_joined #--debug
+# #Join the Tomato genome into a  single scaffold for convenience
+# python3 $scriptdir/1_JoinFastaWithPad.py -i $sourcedir/SolanumLycopersicum.GCF_000188115.4_SL3.0_genomic.fna -o $joined_genome \
+#   -k $sourcedir/SolanumLycopersicum.GCF_000188115.4_SL3.0_genomic.all_in_one.key.txt -n 1000 --newname ${tname}_joined
 
-# for query_genome in $(ls $genomedir/ | sed "s/\.fna//g"); do
-#     qname=${qname/.*/}
-#     
-#     ./1a_PairwiseAlignmentComponent.sh $tname $target_genome $target_size $qname $query_genome $query_size $aligndir
-#     
+# for query_genome in $(ls $genomedir/); do
+#     qname=$(sed "s/\..*//g" <<<$query_genome)
+#     $scriptdir/1a_PairwiseAlignmentComponent.sh $tname $joined_genome $target_size $qname $query_genome $query_size $aligndir $genomedir $scriptdir
 # done
 
-# Make multiple alignment file from individual alignments
-# PATH=$PATH:$HOME/Software/Aligners/multiz-tba.012109/   # Add utilities to PATH
-# for pairwise in $aligndir/1e_*/1h_*.multialign.maf; do
-#   # Get file name in shape for roast (I hate programs with fixed file name requirements)
+# # Make multiple alignment file from individual alignments
+# # NOTE: Needed to modify names in the tree file to match those in the maf file names exactly
+# for pairwise in $(ls $aligndir/1e_*/1h_*.multialign.sorted.maf); do
+#     echo $pairwise
+# #   # Get file name in shape for roast (I hate programs with fixed file name requirements)
 #   outfile=$(basename $pairwise)
-#   outfile=${outfile/multialign.maf/toast2.maf}
+#   outfile=${outfile/multialign.sorted.maf/toast2.maf}
 #   outfile=${outfile/1h_${tname}_/$tname.}
 #   echo $outfile
 #   cp $pairwise $combinedir/$outfile
 # done
-# cd $combinedir
-# roast + X=2 E=$tname "${TREE}" $combinedir/*.toast2.maf 2_combined.roast.maf
+cd $combinedir
+roast + X=2 E=$tname "${TREE}" $combinedir/*.toast2.maf 2_combined.roast.maf
 
 
 # # # # DEPRECATED - Make phylogenetic tree with 4-fold degenerate sites for neutral evolution model
