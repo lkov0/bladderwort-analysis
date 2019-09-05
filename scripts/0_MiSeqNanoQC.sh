@@ -4,6 +4,7 @@ parentDir=/scratch/lk82153/jwlab/Bladderwort
 # parentDir=~/Xfer/Bladderwort
 qcDir=$parentDir/0_MiSeqNanoQC
 fastqDir=$parentDir/0_Data/MiSeqNano_run
+rnaFastqDir=$parentDir/0_Data/Fastq
 
 krakenDB=$parentDir/../kraken_db2
 refDir=$parentDir/0_Data/New_Genome
@@ -47,4 +48,7 @@ module load Kraken2
 
 # # perform kraken analysis on set of reads from ibarra laclette paper 
 
-kraken2 --db $krakenDB --threads 48 --unclassified-out $fastqDir/unclassified_sequences#_SRR768651.fq --output $qcDir/MiSeqNano.kraken_SRR768651.out --report $qcDir/MiSeqNano.kraken_SRR768651.report $fastqDir/SRR768651.fastq
+# kraken2 --db $krakenDB --threads 48 --unclassified-out $fastqDir/unclassified_sequences#_SRR768651.fq --output $qcDir/MiSeqNano.kraken_SRR768651.out --report $qcDir/MiSeqNano.kraken_SRR768651.report $fastqDir/SRR768651.fastq
+
+# # perform kraken analysis on set of RNA reads
+kraken2 --db $krakenDB --threads 4 --output $qcDir/MiSeqNano.kraken_SRR768657.out --report $qcDir/MiSeqNano.kraken_SRR768657.report $rnaFastqDir/SRR768657.fastq
