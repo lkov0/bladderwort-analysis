@@ -30,7 +30,7 @@ if [ ! -e $chaindir ]; then mkdir $chaindir; fi
 target_sizes=$chaindir/1e_$tname.combined.sizes
 query_sizes=$chaindir/1e_$qname.combined.sizes
 
-# # Split target genome by segments
+# Split target genome by segments
 # outprefix=$targetdir/${tname}
 # python3 $scriptdir/1a_CutGenomesBySize.py -i $target_genome -o $outprefix --rename $tname --min 1000 --winsize $target_size #--debug
 # 
@@ -41,8 +41,8 @@ query_sizes=$chaindir/1e_$qname.combined.sizes
 # 
 # # Do all pairwise target-query alignments
 
-lastz_commands=$aligndir/1b_${tname}_${qname}.lastz_commands.txt
-chain_commands=$aligndir/1c_${tname}_${qname}.chain_commands.txt
+# lastz_commands=$aligndir/1b_${tname}_${qname}.lastz_commands.txt
+# chain_commands=$aligndir/1c_${tname}_${qname}.chain_commands.txt
 # echo "echo -e #######\nRunning Pairwise alignments\n#######" > $lastz_commands
 # echo "echo -e #######\nConverting lastz output to chains\n#######" > $chain_commands
 # i=0
@@ -60,16 +60,13 @@ chain_commands=$aligndir/1c_${tname}_${qname}.chain_commands.txt
 #       
 #     done
 # done
-
+# 
 # module load parallel
-
+# 
 # cat $lastz_commands | parallel --progress
 # cat $chain_commands | parallel --progress
 
-# mpirun python $scriptdir/test.py $lastz_commands
-# mpirun python $scriptdir/test.py $chain_commands
-
-# # # ## Get sizes of chromosomes/chromosome segments ##
+# # ## Get sizes of chromosomes/chromosome segments ##
 cat $targetdir/*.fa > $chaindir/1e_$tname.combined.fa
 $UCSC/faSize $chaindir/1e_$tname.combined.fa -detailed > $target_sizes
 rm $chaindir/1e_$tname.combined.fa
@@ -113,3 +110,4 @@ $UCSC/axtToMaf $chaindir/1h_${tname}_${qname}.multialign.sorted.axt $target_size
 
 echo ---------- Done with MAF making ----------------
 
+echo ---------- Done with species $qname ---------------
