@@ -8,14 +8,14 @@ dnaDir=$dataDir/Bladderwort_Illumina
 rnaDir=$dataDir/RNA-seq/mRNA
 reference=$dataDir/New_Genome/Utricularia_gibba_v2.fa
 index=$dataDir/New_Genome/Utricularia_gibba_v2
-PROCS=48
+PROCS=16
 
 # module load Bowtie2
 # module load TopHat
 # module load FastQC
 # module load MultiQC
 # module load seqtk
-# module load Kraken2
+module load Kraken2
 # module load Trimmomatic/0.36-Java-1.8.0_144
 # module load STAR
 # module load spades
@@ -24,7 +24,7 @@ PROCS=48
 # module load Trinity
 # module load Java/1.7.0_80
 # Module load Maker
-module load BLAST+
+# module load BLAST+
 # module load BWA
 # module load SAMtools
 
@@ -58,8 +58,8 @@ module load BLAST+
 #star alignment
 STAR_genome=$dataDir/New_Genome/STAR_genome
 # 
-# if [ ! -e $STAR_genome ]; then mkdir $STAR_genome; fi
-# 
+if [ ! -e $STAR_genome ]; then mkdir $STAR_genome; fi
+
 # STAR --runMode genomeGenerate --runThreadN $PROCS --genomeDir $STAR_genome --genomeFastaFiles $reference 
 # 
 # STAR --genomeDir $STAR_genome --runThreadN $PROCS --readFilesIn $rnaDir/tank1_forward_paired.fq.gz $rnaDir/tank1_reverse_paired.fq.gz --readFilesCommand zcat --outFileNamePrefix $rnaDir/tank1_ --outReadsUnmapped $rnaDir/$rnaDir/unmapped_tank1_ --outSAMtype BAM SortedByCoordinate
@@ -107,60 +107,60 @@ KrakenDB=/scratch/lk82153/jwlab/kraken_db2
 
 # spades.py --continue -o $assemblyDir/spades_assembly1
 
-# # run quast to asseess first genome assembly
+# # run quast to assess first genome assembly
 
 # quast.py -o $assemblyDir/spades_assembly1/quast_all -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $assemblyDir/spades_assembly1/scaffolds.fasta $assemblyDir/spades_assembly1/contigs.fasta
 
 # # create blob plot of assembly - blobtools installed on local machine
-# # first blast assembly against nt database on sapelo2 (need output format to be seqID, taxID and score
-blastn -db /db/ncbiblast/nrte/latest/nt -query $assemblyDir/spades_assembly1/contigs.fasta -out $assemblyDir/spades_assembly1/contigs.blobtools.blastout -perc_identity 90 -num_threads $PROCS -max_target_seqs 10 -outfmt 6
+# # first blast assembly against nt database on sapelo2 (need output format to be seqID, taxID and score using "grep -wFf ~/neededAccessions.list nucl.accession2taxid.txt > contigs.ugibba.accesion2taxid" to make accession to taxid map that was small enough to use for mergining in R.
+
+# blastn -db /db/ncbiblast/nrte/latest/nt -query $assemblyDir/spades_assembly1/contigs.fasta -out $assemblyDir/spades_assembly1/contigs.blobtools.blastout -perc_identity 90 -num_threads $PROCS -max_target_seqs 10 -outfmt 6
 
 # bwa index $assemblyDir/spades_assembly1/contigs.fasta
 # bwa mem $assemblyDir/spades_assembly1/contigs.fasta $dnaDir/uGibbaMerged_forward_trimmed_paired.fq.gz $dnaDir/uGibbaMerged_reverse_trimmed_paired.fq.gz > $assemblyDir/spades_assembly1/contigs.blobtools.sorted.sam
 
 # samtools view -S -b $assemblyDir/spades_assembly1/contigs.blobtools.sorted.sam | samtools sort - > $assemblyDir/spades_assembly1/contigs.blobtools.sorted.bam
 
-# 
+# had to modify blast output to contain contig, taxid of hit, and bitscore as the first three columns. used accession to taxid map and grep -
 # blobtools create -i $assemblyDir/spades_assembly1/contigs.fasta -b $assemblyDir/spades_assembly1/contigs.blobtools.sorted.bam -t $assemblyDir/spades_assembly1/contigs.blobtools.blastout -o $assemblyDir/spades_assembly1/contigs.blobtools && \
-# blobtools view -i $assemblyDir/spades_assembly1/contigs.blobtools.json && \
-# blobtools plot $assemblyDir/spades_assembly1/contigs.blobtools.json
+# blobtools view -i $assemblyDir/spades_assembly1/contigs.blobtools.blobDB.json && \
+# blobtools plot -i $assemblyDir/spades_assembly1/contigs.blobtools.blobDB.json --format svg --notitle
 
 # # run kraken on contigs and scaffolds
 # kraken2 -db $KrakenDB --output $assemblyDir/spades_assembly1/contigs.kraken.out --report $assemblyDir/spades_assembly1/contigs.kraken.report --threads $PROCS $assemblyDir/spades_assembly1/contigs.fasta
 # kraken2 -db $KrakenDB --output $assemblyDir/spades_assembly1/scaffolds.kraken.out --report $assemblyDir/spades_assembly1/scaffolds.kraken.report --threads $PROCS $assemblyDir/spades_assembly1/scaffolds.fasta
 # 
 # # # get sequences classified as bladderwort taxid 13748
-# awk '{print $1, $2, $3, $4}' $assemblyDir/contigs.kraken.out | sed "s/ /\t/g" | awk '$3=="13748"' > $assemblyDir/contigs.ugibba.txt
-# # awk '{print $1, $2, $3, $4}' $assemblyDir/scaffolds.kraken.out | sed "s/ /\t/g" | awk '$3=="13748"' > $assemblyDir/scaffolds.ugibba.txt
+# awk '{print $1, $2, $3, $4}' $assemblyDir/spades_assembly1/contigs.kraken.out | sed "s/ /\t/g" | awk '$3=="13748"' > $assemblyDir/spades_assembly1/contigs.ugibba.txt
+# awk '{print $1, $2, $3, $4}' $assemblyDir/spades_assembly1/scaffolds.kraken.out | sed "s/ /\t/g" | awk '$3=="13748"' > $assemblyDir/spades_assembly1/scaffolds.ugibba.txt
 
-# # # get unclassified contigs and sequences
+# # get unclassified contigs and sequences
 # awk '$1=="U"' $assemblyDir/spades_assembly1/contigs.kraken.out | awk '{print $2}'  > $assemblyDir/spades_assembly1/contigs.unclassified.txt
 # seqtk subseq $assemblyDir/spades_assembly1/contigs.fasta $assemblyDir/spades_assembly1/contigs.unclassified.txt > $assemblyDir/spades_assembly1/contigs.unclassified.fasta
 
-# 
 # # #get names of sequences classified as bladderwort, extract using seqtk
-# awk '4>=2000' $assemblyDir/contigs.ugibba.txt | awk '{print $2}' > $assemblyDir/contig_names.ugibba.txt
-# awk '4>=2000' $assemblyDir/scaffolds.ugibba.txt | awk '{print $2}' > $assemblyDir/scaffolds_names.ugibba.txt
+# awk '{print $2}' $assemblyDir/spades_assembly1/contigs.ugibba.txt > $assemblyDir/spades_assembly1/contig_names.ugibba.txt
+# awk '{print $2}' $assemblyDir/spades_assembly1/scaffolds.ugibba.txt > $assemblyDir/spades_assembly1/scaffold_names.ugibba.txt
 # 
-# seqtk subseq $assemblyDir/contigs.fasta $assemblyDir/contig_names.ugibba.txt > $assemblyDir/contigs.ugibba.fasta
-# seqtk subseq $assemblyDir/scaffolds.fasta $assemblyDir/scaffold_names.ugibba.txt > $assemblyDir/scaffolds.ugibba.fasta
-
-# # run quast on just the u gibba assembly
-# quast.py -o $assemblyDir/spades_assembly1/quast_ugibba_output -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $assemblyDir/spades_assembly1/scaffolds.ugibba.fasta
-
-#try to scaffold with ragoo instead of spades on the spades ugibba contigs
-#since all files need to be in the same directory...
-
-ragooDir=$assemblyDir/Ragoo
+# seqtk subseq $assemblyDir/spades_assembly1/contigs.fasta $assemblyDir/spades_assembly1/contig_names.ugibba.txt > $assemblyDir/spades_assembly1/contigs.ugibba.fasta
+# seqtk subseq $assemblyDir/spades_assembly1/scaffolds.fasta $assemblyDir/spades_assembly1/scaffold_names.ugibba.txt > $assemblyDir/spades_assembly1/scaffolds.ugibba.fasta
 # 
-# if [ ! -e $ragooDir ]; then mkdir $ragooDir; fi
-# cp $dataDir/New_Genome/u.gibba_NEW.genic.gff $assemblyDir/contigs.ugibba.fasta $dataDir/New_Genome/Utricularia_gibba_v2.fasta $dnaDir/uGibbaMerged_forward_trimmed_paired.fq.gz $dnaDir/uGibbaMerged_reverse_trimmed_paired.fq.gz $ragooDir
-# 
-# cd $ragooDir
-# ragoo.py -gff u.gibba_NEW.genic.gff -R uGibbaMerged_combined_trimmed_paired.fq -T sr -t 7 -s contigs.ugibba.fasta Utricularia_gibba_v2.fasta
+# # # run quast on just the u gibba assembly
+# quast.py -o $assemblyDir/spades_assembly1/quast_ugibba_output_inclOld -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $assemblyDir/spades_assembly1/scaffolds.ugibba.fasta $assemblyDir/spades_assembly1/contigs.ugibba.fasta
 
-#evaluate ragoo assembly
-# quast.py -o $ragooDir/quast_results -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $ragooDir/ragoo_output/ragoo.fasta
+# # #try to scaffold with ragoo instead of spades on the spades ugibba contigs
+# # #since all files need to be in the same directory...
+# # 
+# # ragooDir=$assemblyDir/Ragoo
+# # # 
+# # # if [ ! -e $ragooDir ]; then mkdir $ragooDir; fi
+# # # cp $dataDir/New_Genome/u.gibba_NEW.genic.gff $assemblyDir/contigs.ugibba.fasta $dataDir/New_Genome/Utricularia_gibba_v2.fasta $dnaDir/uGibbaMerged_forward_trimmed_paired.fq.gz $dnaDir/uGibbaMerged_reverse_trimmed_paired.fq.gz $ragooDir
+# # # 
+# # # cd $ragooDir
+# # # ragoo.py -gff u.gibba_NEW.genic.gff -R uGibbaMerged_combined_trimmed_paired.fq -T sr -t 7 -s contigs.ugibba.fasta Utricularia_gibba_v2.fasta
+# # 
+# # #evaluate ragoo assembly
+# # # quast.py -o $ragooDir/quast_results -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $ragooDir/ragoo_output/ragoo.fasta
 
 ######################
 # Maker annotation on ragoo assembly
@@ -170,10 +170,20 @@ ragooDir=$assemblyDir/Ragoo
 
 #  Trinity --seqType fq --JM 50G --left $rnaDir/tank1_forward_paired.fq.gz,$rnaDir/tank2_forward_paired.fq.gz,$rnaDir/tank3_forward_paired.fq.gz --right $rnaDir/tank1_reverse_paired.fq.gz,$rnaDir/tank2_reverse_paired.fq.gz,$rnaDir/tank3_reverse_paired.fq.gz --CPU $PROCS --output $assemblyDir/Trinity
 
-#  kraken2 -db $KrakenDB --output $assemblyDir/Trinity/trinity.kraken.out --report $assemblyDir/Trinity/trinity.kraken.report --threads $PROCS $assemblyDir/Trinity/Trinity.fastas
+kraken2 -db $KrakenDB --output $assemblyDir/Trinity/trinity.kraken.out --report $assemblyDir/Trinity/trinity.kraken.report --threads $PROCS $assemblyDir/Trinity/Trinity.fasta
  
+###
+# Wait, what are the unclassified transcripts - blastx
+###
+
+# cat $assemblyDir/Trinity/trinity.kraken.out | grep "^U" | awk '{print $2}' > $assemblyDir/Trinity/unclassfied_trinity.txt
+# seqtk subseq $assemblyDir/spades_assembly1/contigs.fasta $assemblyDir/spades_assembly1/contigs.unclassified.txt > $assemblyDir/spades_assembly1/contigs.unclassified.fasta
+# blastx -db /db/ncbiblast/nrte/latest/nr -query $assemblyDir/Trinity/unclassified.fasta -out $assemblyDir/Trinity/unclassified.blastout -num_threads $PROCS -max_target_seqs 10 -outfmt 6
+
 # generate maker contig files
 # maker -CTL 
 # only changed these options:
 # - genome=/scratch/lk82153/jwlab/Bladderwort/0_Data/New_Genome/Utricularia_gibba_v2.fa
 # - est= 
+# 
+# blastn -db $dataDir/New_Genome/u.gibba_NEW.genes -query $assemblyDir/scaffolds.ugibba.fasta -out $assemblyDir/scaffolds.ugibba.geneblast.txt -perc_identity 90 -num_threads $PROCS -max_target_seqs 10 -outfmt 6
