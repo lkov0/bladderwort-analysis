@@ -5,24 +5,28 @@
 # Software needed: gmap (v2018-07-04), gsnap (v2018-07-04), samtools (v1.6 using htslib 1.6), cufflinks (v2.2.1), ncbi blast (v2.7.1+), meme suite (5.0.4), mummer (v4.0.0.beta2)
 ###########################
 
-parentDir=~/Xfer/Bladderwort
-scriptDir=~/Xfer/Repositories/bladderwort-analysis/scripts
-# parentDir=/scratch/lk82153/jwlab/Bladderwort
-# scriptDir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
-dataDir=$parentDir/0_Data
-fastqDir=$dataDir/Fastq
-alignmentDir=$parentDir/1_Alignment
-cuffDir=$parentDir/2_Cufflinks
-analysisDir=$parentDir/3_Analysis
-memeDir=$parentDir/4_Meme
+# parentDir=~/Xfer/Bladderwort
+# scriptDir=~/Xfer/Repositories/bladderwort-analysis/scripts
+parentDir=/scratch/lk82153/jwlab/Bladderwort
+scriptDir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
+dataDir=/work/jawlab/data/bladderwort
+threeprimeDir=$dataDir/nextseq_rna_3prime/
+assemblyDir=$parentDir/1_Assembly
+alignmentDir=$parentDir/2_Alignment
+quantDir=$parentDir/3_Quantification
+analysisDir=$parentDir/4_CandidateMining
+memeDir=$parentDir/5_Meme
+consDir=$parentDir/6_ConservationAnalysis
 
+if [ ! -e $assemblyDir ]; then mkdir $assemblyDir; fi
 if [ ! -e $alignmentDir ]; then mkdir $alignmentDir; fi
-if [ ! -e $cuffDir ]; then mkdir $cuffDir; fi
+if [ ! -e $quantDir ]; then mkdir $quantDir; fi
 if [ ! -e $analysisDir ]; then mkdir $analysisDir; fi
 if [ ! -e $memeDir ]; then mkdir $memeDir; fi
+if [ ! -e $consDir ]; then mkdir $consDir; fi
 
 
-NPROCS=8
+NPROCS=24
 
 # download RNA-Seq reads from NCBI.
 # SRR094438: low coverage, average of 31,500 reads for each condition (~820k total)
@@ -35,11 +39,11 @@ NPROCS=8
 # fastq-dump -O $dataDir --gzip $fastqDir/$file
 # done
 # 
-# $parentDir/1_runAlignment.sh $fastqDir $alignmentDir
+$parentDir/2_runAlignment.sh $fastqDir $alignmentDir
 # 
 # $scriptDir/3_evaluateGenePairs.sh
 
-$scriptDir/4_findMotifs.sh $parentDir $scriptDir $dataDir $analysisDir $memeDir $NPROCS
+# $scriptDir/4_findMotifs.sh $parentDir $scriptDir $dataDir $analysisDir $memeDir $NPROCS
 
 ################
 # Aligning PacBio Reads to reference for our genotype

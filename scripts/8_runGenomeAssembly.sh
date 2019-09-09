@@ -15,7 +15,7 @@ PROCS=16
 # module load FastQC
 # module load MultiQC
 # module load seqtk
-module load Kraken2
+# module load Kraken2
 # module load Trimmomatic/0.36-Java-1.8.0_144
 # module load STAR
 # module load spades
@@ -27,6 +27,8 @@ module load Kraken2
 # module load BLAST+
 # module load BWA
 # module load SAMtools
+module load OpenMPI
+module load Maker
 
 
 #first, run alignment of DNA and RNA-seq reads to genome
@@ -109,7 +111,11 @@ KrakenDB=/scratch/lk82153/jwlab/kraken_db2
 
 # # run quast to assess first genome assembly
 
-# quast.py -o $assemblyDir/spades_assembly1/quast_all -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $assemblyDir/spades_assembly1/scaffolds.fasta $assemblyDir/spades_assembly1/contigs.fasta
+# quast.py -o $assemblyDir/spades_assembly1/quast_all -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 --threads $PROCS $assemblyDir/spades_assembly1/scaffolds.fasta $assemblyDir/spades_assembly1/contigs.fasta
+
+# # compare these results to the published illumina assembly mapped to the published pacbio assembly
+
+# quast.py -o $assemblyDir/spades_assembly1/quast_publishedGenomes -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.gencd ic.gff -t $PROCS --eukaryote -b --min-identity 90.0 --threads $PROCS $dataDir/Old_Genome/Utricularia_gibba.4.1.fa
 
 # # create blob plot of assembly - blobtools installed on local machine
 # # first blast assembly against nt database on sapelo2 (need output format to be seqID, taxID and score using "grep -wFf ~/neededAccessions.list nucl.accession2taxid.txt > contigs.ugibba.accesion2taxid" to make accession to taxid map that was small enough to use for mergining in R.
@@ -170,8 +176,22 @@ KrakenDB=/scratch/lk82153/jwlab/kraken_db2
 
 #  Trinity --seqType fq --JM 50G --left $rnaDir/tank1_forward_paired.fq.gz,$rnaDir/tank2_forward_paired.fq.gz,$rnaDir/tank3_forward_paired.fq.gz --right $rnaDir/tank1_reverse_paired.fq.gz,$rnaDir/tank2_reverse_paired.fq.gz,$rnaDir/tank3_reverse_paired.fq.gz --CPU $PROCS --output $assemblyDir/Trinity
 
-kraken2 -db $KrakenDB --output $assemblyDir/Trinity/trinity.kraken.out --report $assemblyDir/Trinity/trinity.kraken.report --threads $PROCS $assemblyDir/Trinity/Trinity.fasta
+# kraken2 -db $KrakenDB --output $assemblyDir/Trinity/trinity.kraken.out --report $assemblyDir/Trinity/trinity.kraken.report --threads $PROCS $assemblyDir/Trinity/Trinity.fasta
  
+# awk '{print $1, $2, $3, $4}' $assemblyDir/Trinity/trinity.kraken.out | sed "s/ /\t/g" | awk '$3=="13748"' > $assemblyDir/Trinity/trinity.ugibba.txt
+# awk '{print $2}' $assemblyDir/Trinity/trinity.ugibba.txt > $assemblyDir/Trinity/trinity_names.ugibba.txt
+# 
+# seqtk subseq $assemblyDir/Trinity/Trinity.fasta $assemblyDir/Trinity/trinity_names.ugibba.txt > $assemblyDir/Trinity/Trinity.ugibba.fasta
+
+# running maker
+# edited maker_opts.ctl to include trinity assembled transcripts and asterid proteins downloaded from ensembl PLAZA
+makerDir=$assemblyDir/Maker
+
+if [ ! -e $makerDir ]; then mkdir $makerDir; fi
+cd $makerDir
+
+maker -base ugibba_rnd1 maker_opts.ctl maker_bopts.ctl maker_exe.ctl
+
 ###
 # Wait, what are the unclassified transcripts - blastx
 ###
