@@ -8,22 +8,23 @@
 # IGVTOOLS="bash /home/jgwall/Software/Browsers/IGVTools/igvtools"
 
 #specify number of processors
-# PROCS=48
+PROCS=48
 
-# module load Biopython/1.68-foss-2016b-Python-3.5.2
+module load Biopython/1.68-foss-2016b-Python-3.5.2
+module load ucsc/359
 
 # Set up directories
-parentdir=~/Xfer/Bladderwort
-scriptdir=~/Xfer/Repositories/bladderwort-analysis/scripts
+parentdir=/scratch/lk82153/jwlab/Bladderwort_3pri
+scriptdir=/home/lk82153/Repositories/bladderwort-analysis/scripts
 # parentdir=/scratch/lk82153/jwlab/Bladderwort
 # scriptdir=/scratch/lk82153/jwlab/Repositories/bladderwort-analysis/scripts
-datadir=$parentdir/0_Data
+datadir=/work/jawlab/data/bladderwort
 # parentdir=$HOME/Work/Bladderwort/7_multiSpeciesAlignment
 # datadir=$HOME/Work/Bladderwort/0_Data
-genomedir=$datadir/Genomes/Asterids
-sourcedir=$datadir/Genomes/Utricularia
-aligndir=$parentdir/7b_PairwiseAlignment
-combinedir=$aligndir/bMultiple_Alignment
+genomedir=$datadir/genomes/monocots
+sourcedir=$datadir/genomes/utricularia
+aligndir=$parentdir/6_ConservationAnalysis_monocots
+combinedir=$aligndir/Multiple_Alignment_monocots
 
 if [ ! -e $aligndir ]; then mkdir $aligndir; fi
 if [ ! -e $combinedir ]; then mkdir $combinedir; fi
@@ -46,6 +47,8 @@ if [ ! -e $combinedir ]; then mkdir $combinedir; fi
 # 69266
 # 13750
 TREE="(((VacciniumCorymbosum) ActinidiaChinensis) ((LactucaSativa (HelianthusAnnuus)) (CuscutaAustralis((CapsicumAnnuum SolanumLycopersicum) (PetuniaAxillaris)) (CoffeaCanephora (UtriculariaGibba MimulusGuttatus GenliseaAurea)))))"
+TREEMONOCOT="(SpirodelaPolyrhiza ((SetariaItalica SorghumBicolor)(OryzaSativa BrachypodiumDistachyon)) PhalaenopsisEquestris)"
+TREEROSID= "(KalanchoeFedtschenkoi (((CaricaPapaya ArabidopsisThaliana) DurioZibethinus) ((CannabisSativa PrunusPersica) (GlycineMax MedicagoTruncatula) BetulaPendula CitrullusLanatus ManihotEsculenta) VitisVinifera) BetaVulgaris)"
 # TREE2="((SolanumLycopersicum) (CoffeaCanephora (UtriculariaGibba MimulusGuttatus GenliseaAurea)))"
 
 ###########
@@ -53,14 +56,14 @@ TREE="(((VacciniumCorymbosum) ActinidiaChinensis) ((LactucaSativa (HelianthusAnn
 ###########
 
 tname=UtriculariaGibba
-target_genome=$sourcedir/UtriculariaGibba.GCA_002189035.1_U_gibba_v2_genomic.fna
-joined_genome=$sourcedir/UtriculariaGibba.GCA_002189035.1_U_gibba_v2_genomic.all_in_one.fna
+target_genome=$sourcedir/scaffolds.ugibba_lk.fasta
+joined_genome=$sourcedir/scaffolds.ugibba_lk.all_in_one.fna
 target_size=1500000000 # 1GB = bigger than any U.gibba chromosome
 query_size=1000000  # 1 MB segments for each query
 
-# #Join the U.gibba genome into a single scaffold for convenience
-# python3 $scriptdir/1_JoinFastaWithPad.py -i $sourcedir/UtriculariaGibba.GCA_002189035.1_U_gibba_v2_genomic.fna -o $joined_genome \
-#   -k $sourcedir/UtriculariaGibba.GCA_002189035.1_U_gibba_v2_genomic.all_in_one.key.txt -n 1000 --newname ${tname}_joined
+#Join the U.gibba genome into a single scaffold for convenience
+# python3 $scriptdir/1_JoinFastaWithPad.py -i $sourcedir/scaffolds.ugibba_lk.fasta -o $joined_genome \
+#   -k $sourcedir/scaffolds.ugibba_lk.all_in_one.all_in_one.key.txt -n 1000 --newname ${tname}_joined
 
 # for query_genome in $(ls $genomedir/); do
 #     qname=$(sed "s/\..*//g" <<<$query_genome)
@@ -69,19 +72,20 @@ query_size=1000000  # 1 MB segments for each query
 
 # Make multiple alignment file from individual alignments
 # NOTE: Needed to modify names in the tree file to match those in the maf file names exactly
-# for pairwise in $(ls $aligndir/1e_*/1h_*.multialign.sorted.maf); do
-#     echo $pairwise
-# #   # Get file name in shape for roast (I hate programs with fixed file name requirements)
-#   outfile=$(basename $pairwise)
-#   outfile=${outfile/multialign.sorted.maf/toast2.maf}
-#   outfile=${outfile/1h_${tname}_/$tname.}
-#   echo $outfile
-#   cp $pairwise $combinedir/$outfile
-# done
-# cd $combinedir
-# roast + X=2 E=$tname "${TREE}" $combinedir/*.toast2.maf 2_combined.roast.maf
-# roast + X=2 E=$tname "${TREE2}" $combinedir/*.toast2.maf 2_combined_asteridSmall.roast.maf
+for pairwise in $(ls $aligndir/1e_*/1h_*.multialign.sorted.maf); do
+    echo $pairwise
+#   # Get file name in shape for roast (I hate programs with fixed file name requirements)
+  outfile=$(basename $pairwise)
+  outfile=${outfile/multialign.sorted.maf/toast2.maf}
+  outfile=${outfile/1h_${tname}_/$tname.}
+  echo $outfile
+  cp $pairwise $combinedir/$outfile
+done
+cd $combinedir
+roast + X=2 E=$tname "${TREEMONOCOT}" $combinedir/*.toast2.maf 2_combined.roast.maf
 
+# # $scriptdir/runPhastCons.sh $aligndir $combinedir/2_combined.roast.maf $joined_genome
 
-
-$scriptdir/runPhastCons.sh $aligndir $combinedir/2_combined.roast.maf $joined_genome
+# #fix keyfile
+# # sed "s/, whole genome shotgun sequence//g" $sourcedir/UtriculariaGibba.GCA_002189035.1_U_gibba_v2_genomic.all_in_one.key.txt | sed "s/\s[NC].*.Umecuaro /\t/g" | sed "s/ mitochondrial//g" | sed "s/ chloroplast//g" | sed "s/chromosome 1/unitig_0/g" | sed "s/chromosome 2/unitig_22/g" | sed "s/chromosome 3/unitig_26/g" | sed "s/chromosome 4/unitig_32/g" > $sourcedir/UtriculariaGibba.GCA_002189035.1_U_gibba_v2_genomic.all_in_one.key.fixed.txt
+# 
