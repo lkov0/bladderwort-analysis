@@ -14,37 +14,29 @@ NPROCS=$6
 # motif finding
 ################
 
-#get random set of genes from each category
+#get top 40 candidates in each category, get fasta file of sequences
+for file in $(ls $analysisDir/*summary.tsv | sed "s/.tsv//g"); do
+    head $file.tsv -n 41 > $file.top40.tsv
+    module load R
+    Rscript $scriptDir/makeIntergenicBed.R -i $file.top40.tsv -o $memeDir/$file
+    module unload R
+    module load BEDTools
+    bedtools getfasta -name -fi $dataDir/genomes/utricularia/Utricularia_gibba_v2.fa -bed $memeDir/$file.bed -fo $memeDir/$file.fasta
+done
 
-#get sequences ready for differential motif abundance analysis with meme
 
-#make bedfile of candidate intergenic sequences
-# Rscript $scriptDir/makeIntergenicBed.R -i $analysisDir/bidirectionalPromoter_candidates.txt -o $memeDir/bidirectionalPromoter_candidates
-# Rscript $scriptDir/makeIntergenicBed.R -i $analysisDir/insulator_candidates.txt -o $memeDir/insulator_candidates
-# Rscript $scriptDir/makeIntergenicBed.R -i $analysisDir/terminator_candidates.txt -o $memeDir/terminator_candidates
-# Rscript $scriptDir/makeIntergenicBed.R -i $analysisDir/unidirectionalPromoter_candidates.txt -o $memeDir/unidirectionalPromoter_candidates
-# 
 # module unload R
-# 
-# #obtain fasta file of intergenic sequences
-# 
+
 # module load BEDTools
-# 
-# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $memeDir/bidirectionalPromoter_candidates.bed -fo $memeDir/bidirectionalPromoter_candidates.fasta
-# 
-# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $memeDir/insulator_candidates.bed -fo $memeDir/insulator_candidates.fasta
-# 
-# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $memeDir/terminator_candidates.bed -fo $memeDir/terminator_candidates.fasta
-# 
-# bedtools getfasta -name -fi $dataDir/New_Genome/Utricularia_gibba_v2.fa -bed $memeDir/unidirectionalPromoter_candidates.bed -fo $memeDir/unidirectionalPromoter_candidates.fasta
-# 
+
 # module unload BEDTools
 
 #####meme
 # module load OpenMPI
 # module load MEME
-# 
-# # using meme to find overrepresented sequences in intergenic sequences - just divergent for now since these should contain enrichment of insulator elements.
+
+#use meme on my computer at work.....
+
 # for type in bidirectionalPromoter insulator terminator unidirectionalPromoter; do
 #     meme $memeDir/${type}_candidates.fasta -oc $memeDir/meme_${type} -dna -p $NPROCS -nmotifs 10;
 # done
@@ -59,6 +51,23 @@ promoterFile=$memeDir/Transcription_factor_weight_matrix_plantPAN.edited.memeFor
 for type in bidirectionalPromoter insulator terminator unidirectionalPromoter; do
     fimo --oc $memeDir/fimo_promoter_${type} $promoterFile $memeDir/${type}_candidates.fasta;
 done
+
+plottingDir=$parentDir/7_Plotting
+
+if [ ! -e $plottingDir ]; then mkdir $plottingDir; done
+
+#get genome file from index
+
+for file in $(ls $alignmentDir/*multimapTroubleshooting*bam | sed "s/.bam//g"); do
+#     bedtools bamtobed -i $file.bam > $file.bed
+    bedtools genomecov -bga -i $file.bed -g /work/jawlab/data/bladderwort/genomes/utricularia/Utricularia_gibba_v2.genome > $file.bedgraph
+done
+
+#perform union on samples of same tissue bedgraph
+bedtools unionbedg -i 1L_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 2L_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph > $plottingDir/all_leaf.bedgraph
+bedtools unionbedg -i 1B_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 2B_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 3B_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph > $plottingDir/all_bladder.bedgraph
+bedtools unionbedg -i 1S_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 2S_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 3S_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph > $plottingDir/all_stem.bedgraph
+bedtools unionbedg -i 1R_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 2R_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph 3R_multimapTroubleshootingAligned.sortedByCoord.out.bedgraph > $plottingDir/all_rhizoid.bedgraph
 
 ####mummer
 
