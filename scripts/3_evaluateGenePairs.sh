@@ -3,27 +3,20 @@
 parentDir=$1
 scriptDir=$2
 dataDir=$3
-cuffDir=$4
+alignDir=$4
 analysisDir=$5
 
-#Pull out gene pairs that show high fold change in expression
-#need to split up divergent convergent parallel before I call diffExp because since the RNA libraries are unstranded cufflinks strand calling is basically meaningless
+myAnnos=$dataDir/genomes/utricularia/scaffolds.ugibba_lk.ALL.includingPacBio.gff
+myGenome=$dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta
 
-# for cuff in $(ls $cuffDir); do
-# # Rscript $scriptDir/getGenePairs.R -i $cuffDir/$cuff/genes.fpkm_tracking -o $cuffDir/$cuff/$cuff.bed
-# # bedtools window -a $cuffDir/$cuff/$cuff.bed -b $cuffDir/$cuff/$cuff.bed > $analysisDir/$cuff.overlaps.txt
-# # Rscript $scriptDir/getDiffExpressedNeighbors.R -i $analysisDir/$cuff.overlaps.txt -o $analysisDir/$cuff.diffExp.txt
-# done
+module load R
+
+#Pull out gene pairs that show high fold change in expression
 
 #pull out convergent, divergent, parallel gene pairs
-# Rscript $scriptDir/assignConvergentDivergentParallel.R -i $dataDir/New_Genome/u.gibba_NEW.genic.gff -o $dataDir/New_Genome/u.gibba_NEW.genePairs.txt
-# Rscript $scriptDir/assignConvergentDivergentParallel.R -i $dataDir/Old_Genome/u.gibba_OLD.genic.gff -o $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt
+Rscript $scriptDir/assignConvergentDivergentParallel.R -i $myAnnos -o $dataDir/genomes/utricularia/scaffolds.ugibba_lk.ALL.includingPacBio.genePairs.txt
 
-#append FPKM to *.genePairs.txt
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR094438_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.ALL.txt -p $analysisDir/SRR094438_u.gibba_NEW.foldChange.ALL.png
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/New_Genome/u.gibba_NEW.genePairs.txt -f $cuffDir/SRR768657_U.gibba_NEW/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.ALL.txt -p $analysisDir/SRR768657_u.gibba_NEW.foldChange.ALL.png
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR094438_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.ALL.txt -p $analysisDir/SRR094438_u.gibba_OLD.foldChange.ALL.png
-# Rscript $scriptDir/appendFPKM.R -i $dataDir/Old_Genome/u.gibba_OLD.genePairs.txt -f $cuffDir/SRR768657_U.gibba_OLD/genes.fpkm_tracking -o $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.txt -p $analysisDir/SRR768657_u.gibba_OLD.foldChange.ALL.png
+#append expression values to genePairs file
 
 #find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome, minimum 50 fold change
 # Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.ALL.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.ALL.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -f 50.0
@@ -95,9 +88,9 @@ analysisDir=$5
 #ok, there is a better correlation between jason's and my results now. See plots directory. There are only ~20 candidate genes he found that I didn't find, and about 40 unique to my dataset. (candidate gene pairs are those with >100fpkm difference in expression AND distance <= 1kb) I think this difference has to do with cufflinks version discrepencies since our alignments essentially looked the same at the loci that were different between our cufflinks output files.
 
 #make bedfile with coverage for all genic positions
-covDir=$analysisDir/Coverage
-
-if [ ! -e $covDir ]; then mkdir $covDir; fi
+# covDir=$analysisDir/Coverage
+# 
+# if [ ! -e $covDir ]; then mkdir $covDir; fi
 
 # samtools sort -o $alignmentDir/SRR094438_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR094438_U.gibba_NEW.gsnap.bam 
 # samtools sort -o $alignmentDir/SR7R68657_U.gibba_NEW.gsnap.sorted.bam $alignmentDir/SRR768657_U.gibba_NEW.gsnap.bam
