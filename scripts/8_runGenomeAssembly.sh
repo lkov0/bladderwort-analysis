@@ -3,13 +3,14 @@
 # parentDir=~/Xfer/Bladderwort
 # parentDir=/home/lynseykovar/Work/Bladderwort
 parentDir=/scratch/lk82153/jwlab/Bladderwort
+scriptDir=/home/lk82153/Repositories/bladderwort-analysis/scripts
 assemblyDir=$parentDir/8_GenomeAssembly
 dataDir=/work/jawlab/data/bladderwort
 dnaDir=$dataDir/Bladderwort_Illumina
 rnaDir=$dataDir/mRNA-seq
 reference=$dataDir/New_Genome/Utricularia_gibba_v2.fa
 index=$dataDir/New_Genome/Utricularia_gibba_v2
-PROCS=48
+PROCS=12
 
 # module load Bowtie2
 # module load TopHat
@@ -24,15 +25,16 @@ PROCS=48
 # module load seqtk
 # module load Trinity
 # module load Java/1.7.0_80
-# module load BLAST+
+module load BLAST+
 # module load BWA
 # module load SAMtools
 # module load OpenMPI
 # module load Maker/2.31.10-foss-2016b
-# module load BEDTools
+module load BEDTools
 # module load HMMER/2.3-foss-2016b
 # module load AUGUSTUS/3.2.3-foss-2016b-Python-2.7.14
 # module load busco/3.0.2
+module load R
 
 
 #first, run alignment of DNA and RNA-seq reads to genome
@@ -169,22 +171,23 @@ KrakenDB=/scratch/lk82153/jwlab/kraken_db2
 
 # cp $assemblyDir/spades_assembly1/scaffolds.ugibba.greaterthan1000.fasta /work/jawlab/data/bladderwort/genomes/utricularia/scaffolds.ugibba_lk.fasta
 
+# remove chloroplast and mitochondrial contigs (blasting contigs against U. gibba chloroplast and U. reniformis mitochondrion
+
+makeblastdb -dbtype nucl -in /work/jawlab/data/bladderwort/genomes/utricularia/scaffolds.ugibba_lk.fasta -out /work/jawlab/data/bladderwort/genomes/utricularia/scaffolds.ugibba_lk.fasta
+
+blastn -db $dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta -query $dataDir/genomes/utricularia/Utricularia_gibba_v2.chloroplast_NC_021449.1.fasta -out $assemblyDir/spades_assembly1/scaffolds.ugibba_lk.chloroHits.txt -perc_identity 90 -num_threads $PROCS -max_target_seqs 10 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore slen"
+
+blastn -db $dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta -query $dataDir/genomes/utricularia/Utricularia_reniformis.mitochondrion_NC_034982.1.fasta -out $assemblyDir/spades_assembly1/scaffolds.ugibba_lk.mitoHits.txt -perc_identity 90 -num_threads $PROCS -max_target_seqs 10 -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore slen"
+
+cut -f2 $assemblyDir/spades_assembly1/scaffolds.ugibba_lk.chloroHits.txt | uniq > $assemblyDir/spades_assembly1/organellar_contigs.txt 
+cut -f2 $assemblyDir/spades_assembly1/scaffolds.ugibba_lk.mitoHits.txt | uniq >> $assemblyDir/spades_assembly1/organellar_contigs.txt
+
+# get only non-chloro/mito scaffolds, run quast compared to assembly with chloro/mito contigs
+awk '{ if ((NR>1)&&($0~/^>/)) { printf("\n%s", $0); } else if (NR==1) { printf("%s", $0); } else { printf("\t%s", $0); } }' $dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta | grep -Ffv $assemblyDir/spades_assembly1/organellar_contigs.txt - | tr "\t" "\n" > $assemblyDir/spades_assembly1/scaffolds.ugibba.noOrganellar.fasta
+
+quast.py -o $assemblyDir/spades_assembly1/quast_ugibba_output_rmChloroMito -r $dataDir/genomes/utricularia/Utricularia_gibba_v2.fa -g $dataDir/genomes/utricularia/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $assemblyDir/spades_assembly1/scaffolds.ugibba.noOrganellar.fasta $dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta
+
 myGenome=/work/jawlab/data/bladderwort/genomes/utricularia/scaffolds.ugibba_lk.fasta
-
-
-# # #try to scaffold with ragoo instead of spades on the spades ugibba contigs
-# # #since all files need to be in the same directory...
-# # 
-# # ragooDir=$assemblyDir/Ragoo
-# # # 
-# # # if [ ! -e $ragooDir ]; then mkdir $ragooDir; fi
-# # # cp $dataDir/New_Genome/u.gibba_NEW.genic.gff $assemblyDir/contigs.ugibba.fasta $dataDir/New_Genome/Utricularia_gibba_v2.fasta $dnaDir/uGibbaMerged_forward_trimmed_paired.fq.gz $dnaDir/uGibbaMerged_reverse_trimmed_paired.fq.gz $ragooDir
-# # # 
-# # # cd $ragooDir
-# # # ragoo.py -gff u.gibba_NEW.genic.gff -R uGibbaMerged_combined_trimmed_paired.fq -T sr -t 7 -s contigs.ugibba.fasta Utricularia_gibba_v2.fasta
-# # 
-# # #evaluate ragoo assembly
-# # # quast.py -o $ragooDir/quast_results -r $dataDir/New_Genome/Utricularia_gibba_v2.fa -g $dataDir/New_Genome/u.gibba_NEW.genic.gff -t $PROCS --eukaryote -b --min-identity 90.0 $ragooDir/ragoo_output/ragoo.fasta
 
 ######################
 # Maker annotation on assembly > 1kb
@@ -334,27 +337,27 @@ makerDir=$assemblyDir/Maker_2ndTry
 
 # using transcript/protein/repeat gffs from initial round of maker
 
-source activate /scratch/lk82153/jwlab/maker-env
-
-makerDirLscratch=/lscratch/"$PBS_JOBID"/maker_run
-mkdir $makerDirLscratch
-cd $makerDirLscratch
-
-#need to set RepeatMasker environment variables
-export AUGUSTUS_CONFIG_PATH=~/Augustus/config
-export REPEATMASKER_LIB_DIR=/scratch/lk82153/jwlab/maker-env/share/RepeatMasker/Libraries
-export REPEATMASKER_MATRICES_DIR=/scratch/lk82153/jwlab/maker-env/share/RepeatMasker/Matrices
-
-mpiexec -n 40 maker -base ugibba_rnd3 $makerDir/round3_maker_opts.ctl $makerDir/maker_bopts.ctl $makerDir/maker_exe.ctl
-
-conda deactivate
-
-mv $makerDirLscratch/ugibba_rnd3.maker.output $makerDir
-
-gff3_merge -s -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datastore_index.log > $makerDir/ugibba_rnd3.all.maker.gff
-fasta_merge -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datastore_index.log
-# GFF w/o the sequences
-gff3_merge -n -s -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datastore_index.log > $makerDir/ugibba_rnd3.all.maker.noseq.gff
+# source activate /scratch/lk82153/jwlab/maker-env
+# 
+# makerDirLscratch=/lscratch/"$PBS_JOBID"/maker_run
+# mkdir $makerDirLscratch
+# cd $makerDirLscratch
+# 
+# #need to set RepeatMasker environment variables
+# export AUGUSTUS_CONFIG_PATH=~/Augustus/config
+# export REPEATMASKER_LIB_DIR=/scratch/lk82153/jwlab/maker-env/share/RepeatMasker/Libraries
+# export REPEATMASKER_MATRICES_DIR=/scratch/lk82153/jwlab/maker-env/share/RepeatMasker/Matrices
+# 
+# mpiexec -n 40 maker -base ugibba_rnd3 $makerDir/round3_maker_opts.ctl $makerDir/maker_bopts.ctl $makerDir/maker_exe.ctl
+# 
+# conda deactivate
+# 
+# mv $makerDirLscratch/ugibba_rnd3.maker.output $makerDir
+# 
+# gff3_merge -s -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datastore_index.log > $makerDir/ugibba_rnd3.all.maker.gff
+# fasta_merge -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datastore_index.log
+# # GFF w/o the sequences
+# gff3_merge -n -s -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datastore_index.log > $makerDir/ugibba_rnd3.all.maker.noseq.gff
 
 ###############
 # Snap/Augustus - round3 + maker round 4
@@ -476,15 +479,25 @@ gff3_merge -n -s -d $makerDir/ugibba_rnd3.maker.output/ugibba_rnd3_master_datast
 #extract genic regions
 # bedtools getfasta -s -fi $dataDir/genomes/utricularia/Utricularia_gibba_v2.fa -bed $dataDir/genomes/utricularia/u.gibba_NEW.genes.bed -fo $dataDir/genomes/utricularia/u.gibba_NEW.genes.fa
 
-# # compare annotations with blast
-# makeblastdb -dbtype nucl -in $myGenome -out $myGenome
+# # compare annotations with blast - pacbio annos mapped to my genome
 # blastn -db $myGenome -query $dataDir/genomes/utricularia/u.gibba_NEW.genes.fa -out /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/genes_PacBio_to_scaffolds_lk.blastout -perc_identity 90 -num_threads 8 -outfmt 6
 
-# make bed file of gene matches
+# make bed file of gene 
+# # compare annotations with blast - my annotations mapped to pacbio genome
+# Rscript $scriptDir/gffToBed.R -i $dataDir/genomes/utricularia/scaffolds.ugibba_lk.ALL.includingPacBio.gff -o $dataDir/genomes/utricularia/scaffolds.ugibba_lk.ALL.matches
 # Rscript $scriptDir/blastToBed.R -i /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/genes_PacBio_to_scaffolds_lk.blastout -o /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/pacbio_anno_coordinates.bed
 
 # Rscript $scriptDir/bedtogff.R -i /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/pacbio_anno_coordinates.bed -o /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/pacbio_anno_coordinates.gff
+includingPacBio.bed
 
+# bedtools getfasta -s -name -fi $dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta -bed $dataDir/genomes/utricularia/scaffolds.ugibba_lk.ALL.includingPacBio.bed -fo $dataDir/genomes/utricularia/scaffolds.ugibba_lk.genes.fa
+# 
+# blastn -db $dataDir/genomes/utricularia/Utricularia_gibba_v2 -query $dataDir/genomes/utricularia/scaffolds.ugibba_lk.genes.fa -out /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/genes_scaffolds_lk_to_PacBio.blastout -perc_identity 90 -num_threads 8 -outfmt 6
+
+# make bed file of gene matches
+Rscript $scriptDir/blastToBed.R -i /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/genes_scaffolds_lk_to_PacBio.blastout -o /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/scaffolds_lk_anno_coordinates_in_PacBio.bed
+
+# Rscript $scriptDir/bedToGff.R -i /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/scaffolds_lk_anno_coordinates_in_PacBio.bed -o /scratch/lk82153/jwlab/Bladderwort_3pri/1_Assembly/scaffolds_lk_anno_coordinates_in_PacBio.gff -s BLAST -f gene -p scaffolds_lk
 ##################################################################################################################################3
 ###
 # Wait, what are the unclassified transcripts - blastxl

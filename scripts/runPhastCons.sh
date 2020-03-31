@@ -16,27 +16,34 @@ if [ ! -e $scoreDir ] ; then mkdir $scoreDir; fi
 if [ ! -e $elementDir ] ; then mkdir $elementDir; fi
 
 
-# msa_split $mafFile --in-format MAF --refseq $refGenome \
-#     --windows 1000000,0 --out-root $chunkDir/asteridAlignment1 --out-format SS \
-#     --min-informative 1000 --between-blocks 5000
+msa_split $mafFile --in-format MAF --refseq $refGenome \
+    --windows 1000000,0 --out-root $chunkDir/monocotAlignment1 --out-format SS \
+    --min-informative 1000 --between-blocks 5000
 
-# phyloFit --msa-format MAF --tree "((HelianthusAnnuus,LactucaSativa),(((((PetuniaAxillaris,(CapsicumAnnuum,SolanumLycopersicum)),CuscutaAustralis),((GenliseaAurea,UtriculariaGibba),MimulusGuttatus)),CoffeaCanephora),(ActinidiaChinensis,VacciniumCorymbosum)));" --out-root $treeDir/phyloFit $mafFile
+# command for asterids
+phyloFit --msa-format MAF --tree "((HelianthusAnnuus,LactucaSativa),(((((PetuniaAxillaris,(CapsicumAnnuum,SolanumLycopersicum)),CuscutaAustralis),((GenliseaAurea,UtriculariaGibba),MimulusGuttatus)),CoffeaCanephora),(ActinidiaChinensis,VacciniumCorymbosum)));" --out-root $treeDir/phyloFit $mafFile
 
-# treeCommands=$treeDir/treeCommands.txt
-# rm $treeCommands
-# for file in $(ls $chunkDir/*.ss | sed "s/\.ss//g"); do 
-#     echo "phastCons --target-coverage 0.125 --expected-length 20 --gc 0.4 --estimate-trees $file $file.ss $treeDir/phyloFit.mod --no-post-probs" >> $treeCommands
-# done
-# 
-# cat $treeCommands | parallel --progress
-# 
-# mv $chunkDir/*.mod $treeDir
+# # command for rosids
+phyloFit --msa-format MAF --tree "((KalanchoeFedtschenkoi,UtriculariaGibba),(((CitrullusLanatus,(GlycineMax,MedicagoTruncatula)),(BetulaPendula,((PrunusPersica,CannabisSativa),ManihotEsculenta))),(VitisVinifera,((ArabidopsisThaliana,CaricaPapaya),DurioZibethinus))));" --out-root $treeDir/phyloFit $mafFile
 
-# cd $phastDir
-# ls Trees/*.cons.mod > cons.txt
-# phyloBoot --read-mods '*cons.txt' --output-average ave.cons.mod 
-# ls $treeDir/*.noncons.mod > noncons.txt
-# phyloBoot --read-mods '*noncons.txt' --output-average ave.noncons.mod
+# # command for monocots
+# phyloFit --msa-format MAF --tree "(((ZosteraMarina,SpirodelaPolyrhiza),((AnanasComosus,((SetariaItalica,SorghumBicolor),(BrachypodiumDistachyon,OryzaSativa))),(AsparagusOfficinalis,PhalaenopsisEquestris))),UtriculariaGibba);" --out-root $treeDir/phyloFit $mafFile
+
+treeCommands=$treeDir/treeCommands.txt
+rm $treeCommands
+for file in $(ls $chunkDir/*.ss | sed "s/\.ss//g"); do 
+    echo "phastCons --target-coverage 0.125 --expected-length 20 --gc 0.4 --estimate-trees $file $file.ss $treeDir/phyloFit.mod --no-post-probs" >> $treeCommands
+done
+
+cat $treeCommands | parallel --progress
+
+mv $chunkDir/*.mod $treeDir
+
+cd $phastDir
+ls Trees/*.cons.mod > cons.txt
+phyloBoot --read-mods '*cons.txt' --output-average ave.cons.mod 
+ls $treeDir/*.noncons.mod > noncons.txt
+phyloBoot --read-mods '*noncons.txt' --output-average ave.noncons.mod
 
 rm -f $elementDir/* $scoreDir/*
 phastCommands=$phastDir/phastCommands.txt
@@ -49,3 +56,5 @@ cat $phastCommands | parallel --progress
 
 mv $chunkDir/*.bed $elementDir
 mv $chunkDir/*.wig $scoreDir
+
+cat $elementDir/*.bed | sort -k1,1 -k2,2n > $phastDir/most-conserved.bed

@@ -13,7 +13,12 @@ args=parser$parse_args()
 cat('Getting DB hits from blast file -> bed file',"\n")
 
 blastOut <- read.table(args$inputFile, header=F, sep="\t")
-bedOut <- data.frame(chrom=blastOut$V2, chromStart=blastOut$V9, chromEnd=blastOut$V10, name=".", score=".")
+
+#filter blastOut by best hit per input
+blastOut <- blastOut[order(blastOut$V1, -blastOut$V12), ]
+blastOut <- blastOut[ !duplicated(blastOut$V1), ]
+
+bedOut <- data.frame(chrom=blastOut$V2, chromStart=blastOut$V9, chromEnd=blastOut$V10, name=gsub("\\(.\\)", "", blastOut$V1, perl = T), score=".")
 bedOut$strand <- ifelse(bedOut$chromStart > bedOut$chromEnd, "-", "+")
     
     for(i in 1:nrow(bedOut)) {

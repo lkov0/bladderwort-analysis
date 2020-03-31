@@ -15,7 +15,12 @@ cat('Making bedfiles for intergenic regions of convergent, divergent, and parall
 
 genePairs <- read.table(args$inputFile, header=T, sep="\t")
 
-genePairs.bed <- data.frame(chr = genePairs$chr1, start = genePairs$stop1, stop = genePairs$start2, name=paste(genePairs$geneId1, genePairs$geneId2, sep="."))
+genePairs.bed <- data.frame(chr = genePairs$chr1, start = genePairs$stop1, stop = genePairs$start2, name = genePairs$geneId1)
+
+genePairs.bed$length <- genePairs.bed$stop - genePairs.bed$start
+
+genePairs.bed <- subset(genePairs.bed, length > 10)
+genePairs.bed$length <- NULL
 
 write.table(genePairs.bed, paste(args$outputStem, ".bed", sep=""), row.names=F, col.names=F, sep="\t", quote=F)
 

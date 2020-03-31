@@ -29,7 +29,7 @@ if [ ! -e $consDir ]; then mkdir $consDir; fi
 
 refGenome=$dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta
 
-PROCS=24
+PROCS=12
 
 # download RNA-Seq reads from NCBI.
 # SRR094438: low coverage, average of 31,500 reads for each condition (~820k total)
@@ -44,9 +44,9 @@ PROCS=24
 # 
 # $scriptDir/2_runAlignment.sh $threeprimeDir $alignmentDir $refGenome $dataDir $PROCS
 
-$scriptDir/3_evaluateGenePairs.sh $parentDir $scriptDir $dataDir $alignmentDir $quantDir
+# $scriptDir/3_evaluateGenePairs.sh $parentDir $scriptDir $dataDir $alignmentDir $quantDir
 
-# $scriptDir/4_findMotifs.sh $parentDir $scriptDir $dataDir $analysisDir $memeDir $NPROCS
+$scriptDir/4_findMotifs.sh $parentDir $scriptDir $dataDir $analysisDir $memeDir $NPROCS
 
 ################
 # Aligning PacBio Reads to reference for our genotype

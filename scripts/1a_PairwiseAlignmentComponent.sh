@@ -30,41 +30,41 @@ if [ ! -e $chaindir ]; then mkdir $chaindir; fi
 target_sizes=$chaindir/1e_$tname.combined.sizes
 query_sizes=$chaindir/1e_$qname.combined.sizes
 
-# # Split target genome by segments
-# outprefix=$targetdir/${tname}
-# python3 $scriptdir/1a_CutGenomesBySize.py -i $target_genome -o $outprefix --rename $tname --min 1000 --winsize $target_size
+# Split target genome by segments
+outprefix=$targetdir/${tname}
+python3 $scriptdir/1a_CutGenomesBySize.py -i $target_genome -o $outprefix --rename $tname --min 1000 --winsize $target_size
+
+# Split query genome by segments
+outprefix=$querydir/${qname}
+python3 $scriptdir/1a_CutGenomesBySize.py -i $qgenomedir/$query_genome -o $outprefix --rename $qname --min 1000 --winsize $query_size
+
+
+# Do all pairwise target-query alignments
+
+lastz_commands=$aligndir/1b_${tname}_${qname}.lastz_commands.txt
+chain_commands=$aligndir/1c_${tname}_${qname}.chain_commands.txt
+echo "echo -e #######\nRunning Pairwise alignments\n#######" > $lastz_commands
+echo "echo -e #######\nConverting lastz output to chains\n#######" > $chain_commands
+i=0
+for target_win in $targetdir/${tname}*.fa; do
+    for query_win in $querydir/${qname}*.fa; do
+    
+      axtfile=$pairdir/1c_${tname}_${qname}.$i.axt 
+      chainfile=$pairdir/1d_${tname}_${qname}.$i.chain
+      
+# #       Align with LASTZ and convert to a chain file
+      echo "module load LASTZ; lastz $target_win $query_win --ambiguous=iupac --format=axt --inner=2000 --xdrop=9400 --gappedthresh=3000 --hspthresh=2200 > $axtfile" >> $lastz_commands
+      echo "module load LASTZ; axtChain -linearGap=loose $axtfile -faT $target_win -faQ $query_win $chainfile" >> $chain_commands
+      
+      i=$(($i+1))
+      
+    done
+done
+
+module load parallel
 # 
-# # Split query genome by segments
-# outprefix=$querydir/${qname}
-# python3 $scriptdir/1a_CutGenomesBySize.py -i $qgenomedir/$query_genome -o $outprefix --rename $qname --min 1000 --winsize $query_size
-# 
-# 
-# # Do all pairwise target-query alignments
-# 
-# lastz_commands=$aligndir/1b_${tname}_${qname}.lastz_commands.txt
-# chain_commands=$aligndir/1c_${tname}_${qname}.chain_commands.txt
-# echo "echo -e #######\nRunning Pairwise alignments\n#######" > $lastz_commands
-# echo "echo -e #######\nConverting lastz output to chains\n#######" > $chain_commands
-# i=0
-# for target_win in $targetdir/${tname}*.fa; do
-#     for query_win in $querydir/${qname}*.fa; do
-#     
-#       axtfile=$pairdir/1c_${tname}_${qname}.$i.axt 
-#       chainfile=$pairdir/1d_${tname}_${qname}.$i.chain
-#       
-# # #       Align with LASTZ and convert to a chain file
-#       echo "module load LASTZ; lastz $target_win $query_win --ambiguous=iupac --format=axt --inner=2000 --xdrop=9400 --gappedthresh=3000 --hspthresh=2200 > $axtfile" >> $lastz_commands
-#       echo "module load LASTZ; axtChain -linearGap=loose $axtfile -faT $target_win -faQ $query_win $chainfile" >> $chain_commands
-#       
-#       i=$(($i+1))
-#       
-#     done
-# done
-# 
-# module load parallel
-# # 
-# cat $lastz_commands | parallel --progress
-# cat $chain_commands | parallel --progress
+cat $lastz_commands | parallel --progress
+cat $chain_commands | parallel --progress
 
 # # # ## Get sizes of chromosomes/chromosome segments ##
 cat $targetdir/*.fa > $chaindir/1e_$tname.combined.fa

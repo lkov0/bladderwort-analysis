@@ -101,3 +101,4 @@ Rscript $scriptDir/assignConvergentDivergentParallel.R -i $myAnnos -o $dataDir/g
 #get average coverage in intergenic regions. 
 
 
+

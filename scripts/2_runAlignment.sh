@@ -54,19 +54,18 @@ if [ ! -e $fcDir ] ; then mkdir $fcDir; fi
 if [ ! -e $htDir ] ; then mkdir $htDir; fi
 if [ ! -e $macDir ] ; then mkdir $macDir; fi
 
-
-
-
-# for seq in $(ls $fastqDir | grep combined.trimmed.fq.gz | sed "s/.combined.trimmed.fq.gz//g"); do
-# #     STAR --runThreadN $PROCS --genomeDir $STAR_genome --sjdbOverhang 100 --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMatchNmin 0 --outFilterMismatchNmax 2 --readFilesIn $fastqDir/$seq.combined.trimmed.fq.gz --readFilesCommand zcat --outFileNamePrefix $alignmentDir/${seq}_multimapTroubleshooting --outReadsUnmapped $alignmentDir/unmapped_${seq} --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts
-# #     STAR --genomeDir $STAR_genome --runThreadN $PROCS --readFilesIn $fastqDir/$seq.combined.trimmed.fq.gz --readFilesCommand zcat --outFileNamePrefix $alignmentDir/${seq}_ --outReadsUnmapped $alignmentDir/unmapped_${seq} --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts
-# #     samtools index $alignmentDir/${seq}_Aligned.sortedByCoord.out.bam
-# #     samtools index $alignmentDir/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam
-#     htseq-count -f bam -t gene -i ID $alignmentDir/PacBio_Genome/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam $dataDir/genomes/utricularia/u.gibba_NEW.genes_for_3prime.gff > $alignmentDir/PacBio_Genome/htSeq_out/${seq}_htSeq_counts.txt
-#     htseq-count -f bam -t gene -i ID $alignmentDir/PacBio_Genome/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam $dataDir/genomes/utricularia/u.gibba_NEW.genic.gff > $alignmentDir/PacBio_Genome/htSeq_out/${seq}_htSeq_counts_noAdjustment.txt
-# #     featureCounts -t gene -g ID -a $dataDir/genomes/utricularia/u.gibba_NEW.genes_for_3prime.gff -o $fcDir/${seq}_featureCounts.txt $alignmentDir/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam
-#     
-# done
+for seq in $(ls $fastqDir | grep combined.trimmed.fq.gz | sed "s/.combined.trimmed.fq.gz//g"); do
+    
+    STAR --runThreadN $PROCS --genomeDir $STAR_genome --sjdbOverhang 100 --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMatchNmin 0 --outFilterMismatchNmax 2 --readFilesIn $fastqDir/$seq.combined.trimmed.fq.gz --readFilesCommand zcat --outFileNamePrefix $alignmentDir/${seq}_multimapTroubleshooting --outReadsUnmapped $alignmentDir/unmapped_${seq} --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts
+        
+    samtools index $alignmentDir/${seq}_Aligned.sortedByCoord.out.bam
+    
+    samtools index $alignmentDir/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam
+    
+    htseq-count -f bam -t gene -i ID $alignmentDir/PacBio_Genome/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam $dataDir/genomes/utricularia/u.gibba_NEW.genes_for_3prime.gff > $alignmentDir/PacBio_Genome/htSeq_out/${seq}_htSeq_counts.txt
+    
+    htseq-count -f bam -t gene -i ID $alignmentDir/PacBio_Genome/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam $dataDir/genomes/utricularia/u.gibba_NEW.genic.gff > $alignmentDir/PacBio_Genome/htSeq_out/${seq}_htSeq_counts_noAdjustment.txt
+done
 
 #get regions corresponding to genic region + "3'" for each gene
 # RScript $scriptDir/expandGenicRegions3prime.R
