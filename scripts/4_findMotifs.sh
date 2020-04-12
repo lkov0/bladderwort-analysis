@@ -46,6 +46,12 @@ module unload R
 module load BEDTools
 bedtools getfasta -name -fi $dataDir/genomes/utricularia/Utricularia_gibba_v2.fa -bed $memeDir/PacBio_Genome/all_pairs_pacbio.bed -fo $memeDir/PacBio_Genome/all_pairs_pacbio.fasta
 
+# intersect hits from pacbio conserved regions
+bedtools sort -i $memeDir/PacBio_Genome/all_pairs_pacbio.bed > $memeDir/PacBio_Genome/all_pairs_pacbio.sorted.bed
+bedtools intersect -a $memeDir/PacBio_Genome/all_pairs_pacbio.sorted.bed -b $memeDir/PacBio_Genome/asterids.most-conserved.final.bed > $intersectDir/all_pairs.asterids.intersect.txt
+bedtools intersect -a $memeDir/PacBio_Genome/all_pairs_pacbio.sorted.bed -b $memeDir/PacBio_Genome/rosids.most-conserved.final.bed > $intersectDir/all_pairs.rosids.intersect.txt
+bedtools intersect -a $memeDir/PacBio_Genome/all_pairs_pacbio.sorted.bed -b $memeDir/PacBio_Genome/monocots.most-conserved.final.bed > $intersectDir/all_pairs.monocots.intersect.txt
+
 ################
 # motif finding 
 ################
