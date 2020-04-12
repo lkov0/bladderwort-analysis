@@ -1,4 +1,9 @@
-#3_evaluateGenePairs.sh
+######################
+# Author: Lynsey Kovar
+# Date: Jan 16 2019
+# Purpose: preliminary bladderwort analysis using old published datasets
+# Software needed: R, Blast
+######################
 
 parentDir=$1
 scriptDir=$2
@@ -16,9 +21,9 @@ module load R
 #pull out convergent, divergent, parallel gene pairs
 Rscript $scriptDir/assignConvergentDivergentParallel.R -i $myAnnos -o $dataDir/genomes/utricularia/scaffolds.ugibba_lk.ALL.includingPacBio.genePairs.txt
 
-#append expression values to genePairs file
+# append expression values to genePairs file
 
-#find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome, minimum 50 fold change
+# find shared high fold change in expression gene pairs between RNA-seq runs aligned to the same genome, minimum 50 fold change
 # Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_NEW.genePairs.foldChange.ALL.txt -r2 $analysisDir/SRR094438_U.gibba_NEW.genePairs.foldChange.ALL.txt -o $analysisDir/shared_u.gibba_NEW.genePairs.foldChange.txt -f 50.0
 # Rscript $scriptDir/findSharedExpressedGenePairs.R -r1 $analysisDir/SRR768657_u.gibba_OLD.genePairs.foldChange.ALL.txt -r2 $analysisDir/SRR094438_u.gibba_OLD.genePairs.foldChange.ALL.txt -o $analysisDir/shared_u.gibba_OLD.genePairs.foldChange.txt -f 50.0
 
