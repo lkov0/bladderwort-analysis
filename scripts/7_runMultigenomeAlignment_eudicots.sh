@@ -25,7 +25,7 @@ if [ ! -e $aligndir ]; then mkdir $aligndir; fi
 if [ ! -e $combinedir ]; then mkdir $combinedir; fi
 
 # Alignment tree from phyloT (http://phylot.biobyte.de/)
-REEEUDICOT="((((MimulusGuttatus GenliseaAurea) ((CuscutaAustralis (PetuniaAxillaris (SolanumLycopersicum CapsicumAnnuum))) CoffeaCanephora)) ((LactucaSativa (HelianthusAnnuus ConyzaCanadensis)) (VacciniumCorymbosum ActinidiaChinensis))) (((((ArabidopsisThaliana CaricaPapaya) DurioZibethinus) VitisVinifera) ((BetulaPendula CirtrullusLanatus) (((CannabisSativa PrunusPersica) (MedicagoTruncatula GlycineMax)) ManihotEsculenta))) KalanchoeFedtschenkoi))"
+TREEEUDICOT="((((MimulusGuttatus GenliseaAurea) ((CuscutaAustralis (PetuniaAxillaris (SolanumLycopersicum CapsicumAnnuum))) CoffeaCanephora)) ((LactucaSativa (HelianthusAnnuus ConyzaCanadensis)) (VacciniumCorymbosum ActinidiaChinensis))) (((((ArabidopsisThaliana CaricaPapaya) DurioZibethinus) VitisVinifera) ((BetulaPendula CirtrullusLanatus) (((CannabisSativa PrunusPersica) (MedicagoTruncatula GlycineMax)) ManihotEsculenta))) KalanchoeFedtschenkoi))"
 ###########
 # Pairwise genome alignments - Split apart for simplicity
 ###########
