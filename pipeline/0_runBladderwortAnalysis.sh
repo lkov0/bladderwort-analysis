@@ -40,7 +40,7 @@ for file in SRR094438 SRR768657; do
  fastq-dump -O $dataDir --gzip $fastqDir/$file
 done
 
-$scriptDir/2_runAlignment.sh $threeprimeDir $alignmentDir $refGenome $dataDir $PROCS
+$scriptDir/1_runAlignment.sh $threeprimeDir $alignmentDir $refGenome $dataDir $PROCS
 
 $scriptDir/3_evaluateGenePairs.sh $parentDir $scriptDir $dataDir $alignmentDir $quantDir
 

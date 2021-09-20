@@ -1,7 +1,7 @@
 ######################
 # Author: Lynsey Kovar
-# Date: Jan 16 2018
-# Purpose: to align fastq files to U. gibba genome
+# Date: Jan 16 2019
+# Purpose: to align fastq files to U. gibba genome from 3' mRNA sequencing
 # Software needed: FastQC, MultiQC, STAR, Trimmomatic, SAMtools, HTSeq
 ######################
 
@@ -27,14 +27,17 @@ fastqc -t $PROCS -o $fastqDir/fastqc $fastqDir/*fastq.gz
 cd $fastqDir/fastqc/
 multiqc $fastqDir/fastqc/* 
 
+# trim reads with trimmomatic
 for seq in $(ls $fastqDir | grep .fastq.gz | sed "s/.fastq.gz//g"); do
     java -jar /usr/local/apps/eb/Trimmomatic/0.36-Java-1.8.0_144/trimmomatic-0.36.jar SE $fastqDir/$seq.fastq.gz $fastqDir/$seq.trimmed.fq.gz ILLUMINACLIP:$HOME/TruSeq3-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads $PROCS 
 done
 
+# fastqc/multiqc for trimmed reads
 if [ ! -e $fastqDir/fastqc_trimmed ] ; then mkdir $fastqDir/fastqc_trimmed; fi
 fastqc -t $PROCS -o $fastqDir/fastqc_trimmed $fastqDir/*trimmed.fq.gz
 multiqc -f -o $fastqDir/multiqc_trimmed $fastqDir/fastqc_trimmed
 
+# comine lanes of data for each sample
 for sample in 1L 2L 3L 1R 2R 3R 1B 2B 3B 1S 2S 3S; do 
     cat ${sample}*.trimmed.fq.gz > ${sample}.combined.trimmed.fq.gz
 done
@@ -66,20 +69,21 @@ for seq in $(ls $fastqDir | grep combined.trimmed.fq.gz | sed "s/.combined.trimm
     htseq-count -f bam -t gene -i ID $alignmentDir/PacBio_Genome/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam $dataDir/genomes/utricularia/u.gibba_NEW.genic.gff > $alignmentDir/PacBio_Genome/htSeq_out/${seq}_htSeq_counts_noAdjustment.txt
 done
 
-# get regions corresponding to genic region + "3'" for each gene
-RScript $scriptDir/expandGenicRegions3prime.R
+# get regions corresponding to genic region + "3'" for each gene (u.gibba_NEW.genes_for_3prime.txt)
+Rscript $scriptDir/expandGenicRegions3prime.R
 
 for file in $(ls $htDir); do
     awk '{print $2}' $file.txt > $file.counts;
 done
 
 # make gff
+grep "##" $dataDir/New_Genome/u.gibba_NEW.gff > u.gibba_NEW.gffheader.txt 
 cat u.gibba_NEW.gffheader.txt u.gibba_NEW.genes_for_3prime.txt > u.gibba_NEW.genes_for_3prime.gff
 
-$parentDir/obtainGenicRegions.sh $dataDir $scriptDir $dataDir/New_Genome/u.gibba_NEW.gff
+$parentDir/obtainGenicRegions.sh $dataDir $scriptDir u.gibba_NEW.genes_for_3prime.gff
 
 #######################
-# Tests - alignment and quantification
+# Tests - alignment and quantification (to see which annotations capture the most data from the three full transcript mRNA-Seq samples)
 #######################
 
 # map mRNA-seq reads to genome

@@ -11,8 +11,9 @@ refGenome=$refDir/Utricularia_gibba_v2.faa
 
 if [ ! -e $qcDir ]; then mkdir $qcDir; fi
 
-# first transferred files from basespace mount to MiSeqNano_run (run 2553)
+# first transferred files from basespace mount to MiSeqNano_run
 module load Kraken2
+
 
 kraken2 --db $krakenDB --threads 48 --unclassified-out $fastqDir/unclassified_sequences#_kivancDB.fa --output $qcDir/MiSeqNano.kraken_kivancDB.out --report $qcDir/MiSeqNano.kraken_kivancDB.report --paired --gzip-compressed $fastqDir/uGibbaTest1_S1_L001_R1_001.fastq.gz $fastqDir/uGibbaTest1_S1_L001_R2_001.fastq.gz
 
@@ -27,7 +28,7 @@ samtools view -b $qcDir/uGibbaTest1_uGibbaAlignment_local.sam -o $qcDir/uGibbaTe
 samtools sort $qcDir/uGibbaTest1_uGibbaAlignment_local.bam > $qcDir/uGibbaTest1_uGibbaAlignment_local.sorted.bam
 samtools index -b $qcDir/uGibbaTest1_uGibbaAlignment_local.sorted.bam
 
-# # next i want to compare heterozygosity of our genome with another genotype (ibarra-laclette 2013 illumina reads).
+# # next i want to compare read mapping statistics of our genome with another genotype (ibarra-laclette 2013 illumina reads).
 # # download SRA data
 for file in SRR768651 SRR768652; do 
   fastq-dump -v --gzip $fastqDir/$file
