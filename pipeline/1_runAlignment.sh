@@ -47,14 +47,18 @@ STAR_genome=$dataDir/genomes/STAR_genome_pbio
 mkdir $STAR_genome
 STAR --runMode genomeGenerate --runThreadN $PROCS --genomeDir $STAR_genome --genomeFastaFiles $refGenome --genomeSAindexNbases 12 --sjdbGTFfile $dataDir/genomes/utricularia/u.gibba_NEW.genes_for_3prime.gff
 
-fcDir=$alignmentDir/featureCounts_out
 htDir=$alignmentDir/htSeq_out
-macDir=$alignmentDir/macs2_out
 
-if [ ! -e $fcDir ] ; then mkdir $fcDir; fi
 if [ ! -e $htDir ] ; then mkdir $htDir; fi
-if [ ! -e $macDir ] ; then mkdir $macDir; fi
 
+# get regions corresponding to genic region + "3'" for each gene (u.gibba_NEW.genes_for_3prime.txt)
+Rscript $scriptDir/expandGenicRegions3prime.R
+
+# make gff
+grep "##" $dataDir/New_Genome/u.gibba_NEW.gff > u.gibba_NEW.gffheader.txt 
+cat u.gibba_NEW.gffheader.txt u.gibba_NEW.genes_for_3prime.txt > u.gibba_NEW.genes_for_3prime.gff
+
+# run alignment, count transcripts with htseq - original annotations and adjusted annotations
 for seq in $(ls $fastqDir | grep combined.trimmed.fq.gz | sed "s/.combined.trimmed.fq.gz//g"); do
     
     STAR --runThreadN $PROCS --genomeDir $STAR_genome --sjdbOverhang 100 --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMatchNmin 0 --outFilterMismatchNmax 2 --readFilesIn $fastqDir/$seq.combined.trimmed.fq.gz --readFilesCommand zcat --outFileNamePrefix $alignmentDir/${seq}_multimapTroubleshooting --outReadsUnmapped $alignmentDir/unmapped_${seq} --outSAMtype BAM SortedByCoordinate --quantMode GeneCounts
@@ -68,16 +72,9 @@ for seq in $(ls $fastqDir | grep combined.trimmed.fq.gz | sed "s/.combined.trimm
     htseq-count -f bam -t gene -i ID $alignmentDir/PacBio_Genome/${seq}_multimapTroubleshootingAligned.sortedByCoord.out.bam $dataDir/genomes/utricularia/u.gibba_NEW.genic.gff > $alignmentDir/PacBio_Genome/htSeq_out/${seq}_htSeq_counts_noAdjustment.txt
 done
 
-# get regions corresponding to genic region + "3'" for each gene (u.gibba_NEW.genes_for_3prime.txt)
-Rscript $scriptDir/expandGenicRegions3prime.R
-
 for file in $(ls $htDir); do
     awk '{print $2}' $file.txt > $file.counts;
 done
-
-# make gff
-grep "##" $dataDir/New_Genome/u.gibba_NEW.gff > u.gibba_NEW.gffheader.txt 
-cat u.gibba_NEW.gffheader.txt u.gibba_NEW.genes_for_3prime.txt > u.gibba_NEW.genes_for_3prime.gff
 
 $parentDir/obtainGenicRegions.sh $dataDir $scriptDir u.gibba_NEW.genes_for_3prime.gff
 

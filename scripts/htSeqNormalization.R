@@ -1,4 +1,5 @@
 #htSeqNormalization.R
+# get normalized_counts.txt file from DESeq2 normalized table.
 
 library(DESeq2)
 
