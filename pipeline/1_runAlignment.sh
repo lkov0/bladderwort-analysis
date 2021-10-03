@@ -42,7 +42,6 @@ for sample in 1L 2L 3L 1R 2R 3R 1B 2B 3B 1S 2S 3S; do
     cat ${sample}*.trimmed.fq.gz > ${sample}.combined.trimmed.fq.gz
 done
 
-
 # align 3' transcripts with star
 STAR_genome=$dataDir/genomes/STAR_genome_pbio
 mkdir $STAR_genome

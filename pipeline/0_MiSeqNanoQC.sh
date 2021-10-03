@@ -14,7 +14,6 @@ if [ ! -e $qcDir ]; then mkdir $qcDir; fi
 # first transferred files from basespace mount to MiSeqNano_run
 module load Kraken2
 
-
 kraken2 --db $krakenDB --threads 48 --unclassified-out $fastqDir/unclassified_sequences#_kivancDB.fa --output $qcDir/MiSeqNano.kraken_kivancDB.out --report $qcDir/MiSeqNano.kraken_kivancDB.report --paired --gzip-compressed $fastqDir/uGibbaTest1_S1_L001_R1_001.fastq.gz $fastqDir/uGibbaTest1_S1_L001_R2_001.fastq.gz
 
 # #align reads to bladderwort ref: how many align???
@@ -51,3 +50,5 @@ kraken2 --db $krakenDB --threads 48 --unclassified-out $fastqDir/unclassified_se
 
 # # perform kraken analysis on set of RNA reads
 kraken2 --db $krakenDB --threads 4 --output $qcDir/MiSeqNano.kraken_SRR768657.out --report $qcDir/MiSeqNano.kraken_SRR768657.report $rnaFastqDir/SRR768657.fastq
+
+# results of this analysis were compared to make sure the illumina sequenced reads would produce enough data for a genome assembly of U. gibba from short reads
