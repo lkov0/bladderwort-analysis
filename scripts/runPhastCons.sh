@@ -1,4 +1,5 @@
 # runPhastCons.sh
+# run PhastCons to get conservedRegions.bed file from pairwise genome alignments to U. gibba 
 
 alignDir=$1
 mafFile=$2

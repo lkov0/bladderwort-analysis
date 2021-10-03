@@ -1,4 +1,6 @@
 #expandGenicRegions3prime.R
+# code used to expand genic regions for 3' analysis.
+# many annotated genes did not fully overlap with the 3' expression data so the regions were expanded by 500bp to fix this.
 
 gff <- read.table("Xfer-work/bladderwort/genomes/utricularia/u.gibba_NEW.forStar.gff", header=F, sep="\t")
 

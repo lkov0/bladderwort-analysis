@@ -1,6 +1,5 @@
-#! /usr/bin/Rscript
-#formatKrakenTaxonomyCounts.R
-#Purpose: to format kraken output files for downstream taxonomy-based analyses, with counts of sequences assigned to each taxonomic assignment
+# formatKrakenTaxonomyCounts.R
+# Purpose: to format kraken output files for downstream taxonomy-based analyses, with counts of sequences assigned to each taxonomic assignment
 
 library(stringr)
 library(argparse)

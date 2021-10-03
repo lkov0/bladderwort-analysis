@@ -1,4 +1,5 @@
-#gcContentAnalyis.R
+# gcContentAnalyis.R
+# investigate gc content of candidate regions and ouput plots of results.
 
 library(ggplot2)
 

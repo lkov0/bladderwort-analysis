@@ -1,5 +1,7 @@
 __author__ = 'jgwall'
 
+# script to join a multifasta file into one contig with N padding between each original sequence 
+
 import argparse
 import gzip
 from Bio import SeqIO

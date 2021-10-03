@@ -1,5 +1,7 @@
 __author__ = 'jgwall'
 
+# Script to cut genome into chunks of user specified size
+
 import argparse
 import gzip
 from Bio import SeqIO

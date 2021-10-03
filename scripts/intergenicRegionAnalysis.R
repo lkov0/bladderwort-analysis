@@ -1,4 +1,5 @@
 # intergenic region analysis
+# R code used to futher interrogate expression data around intergenic regions of interest.
 
 # first, check orientation of candidates
 library(ggplot2)

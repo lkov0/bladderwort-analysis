@@ -1,3 +1,5 @@
+# getDiffExpGenePairs_3prime.R
+# use gene pair table to extract top candidates for each regulatory element class. 
 
 library(matrixStats)
 

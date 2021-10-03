@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Script to do pairwise multiple alignment of two genomes
 

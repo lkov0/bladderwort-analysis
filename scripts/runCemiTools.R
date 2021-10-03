@@ -1,4 +1,5 @@
 # runCemiTools.R
+# run CemiTools cluster analysis on the 3' expression dataset, get promoter regions associated with each module
 
 library(CEMiTool)
 

@@ -66,17 +66,6 @@ for file in $(ls $analysisDir/*summary.tsv | sed "s/.tsv//g"); do
     bedtools getfasta -name -fi $dataDir/genomes/utricularia/scaffolds.ugibba_lk.fasta -bed $memeDir/$file.bed -fo $memeDir/$file.fasta
 done
 
-
-# module unload R
-
-# module load BEDTools
-
-# module unload BEDTools
-
-#####meme
-# module load OpenMPI
-# module load MEME
-
 #use meme on my computer at work.....
 
 # for type in bidirectionalPromoter insulator terminator unidirectionalPromoter; do
@@ -147,6 +136,8 @@ done
 # CEMiTool co-expression based promoter finding (taking 200bp before the annotated start position of the gene)
 # two modules were found
 #############
+
+# for analyses done to get the cemitool.bed files, see runCemiTools.R
 
 cemiDir=$memeDir/CEMiTools
 if [ ! -e $cemiDir ]; then mkdir $cemiDir; fi

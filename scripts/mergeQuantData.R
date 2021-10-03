@@ -1,4 +1,5 @@
 #mergeQuantData.R
+# merge all quant data into one table, normalize the raw counts with DESeq2, plot PCA of data
 
 library(vegan)
 library(ggplot2)
